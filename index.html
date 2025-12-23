@@ -4,9 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BiomCYL</title>
+
+    <!-- Apple Touch Icon for iOS bookmarks -->
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=0.3.3">
+
+    <!-- Standard favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png?v=0.3.3">
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json?v=0.3.3">
+
+    <!-- SVG favicon for modern browsers -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><line x1='10' y1='38' x2='38' y2='38' stroke='%234A90E2' stroke-width='3' stroke-linecap='round'/><line x1='10' y1='38' x2='24' y2='12' stroke='%234A90E2' stroke-width='3' stroke-linecap='round'/><path d='M 16 38 A 8 8 0 0 1 13.5 31' fill='none' stroke='%234A90E2' stroke-width='2'/><text x='20' y='35' font-size='12' fill='%234A90E2' font-family='Arial'>θ</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css?v=0.3.1">
+    <link rel="stylesheet" href="styles.css?v=0.3.3">
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-800">
 
@@ -19,8 +30,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="w-8 h-8 shrink-0">
                         <line x1="10" y1="38" x2="38" y2="38" stroke="white" stroke-width="3" stroke-linecap="round"/>
                         <line x1="10" y1="38" x2="24" y2="12" stroke="white" stroke-width="3" stroke-linecap="round"/>
-                        <path d="M 16 38 A 8 8 0 0 1 13.5 31" fill="none" stroke="white" stroke-width="2"/>
-                        <text x="20" y="35" font-size="12" fill="white" font-family="Arial">θ</text>
+                        <path d="M 22 38 A 12 12 0 0 0 14.5 28" fill="none" stroke="white" stroke-width="2.5"/>
                     </svg>
                     <div>
                         <h1 class="text-lg font-bold text-white tracking-tight">BiomCYL</h1>
@@ -294,8 +304,8 @@
                     <div class="mt-4 pt-3 border-t border-gray-100">
                         <p class="text-[9px] text-gray-400 leading-relaxed">
                             <span id="deltaTkLegend" class="hidden"><strong class="text-gray-500">ΔTK</strong> total keratometry (corrected with measured PK)<br></span>
-                            <strong class="text-gray-500">ΔSO</strong> astigmatism optimized by the Savini method (<a href="https://doi.org/10.1016/j.jcrs.2017.06.040" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">JCRS 2017</a>)<br>
-                            <strong class="text-gray-500">ΔAK</strong> astigmatism optimized by the Abulafia-Koch regression (<a href="https://doi.org/10.1016/j.jcrs.2016.02.038" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">JCRS 2016</a>)
+                            <strong class="text-gray-500">ΔSO</strong> optimized by the Savini method (<a href="https://doi.org/10.1016/j.jcrs.2017.06.040" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">JCRS 2017</a>)<br>
+                            <strong class="text-gray-500">ΔAK</strong> optimized by the Abulafia-Koch regression (<a href="https://doi.org/10.1016/j.jcrs.2016.02.038" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">JCRS 2016</a>)
                         </p>
                     </div>
                 </div>
@@ -304,11 +314,11 @@
         </main>
 
         <footer class="px-5 py-4 bg-gray-50 border-t border-gray-100 text-[10px] text-gray-400 text-center">
-            <p class="font-semibold">BiomCYL 0.3.1</p>
+            <p class="font-semibold">BiomCYL 0.3.3</p>
             <p>Developed by Miguel Raimundo</p>
         </footer>
     </div>
 
-    <script src="script.js?v=0.3.1"></script>
+    <script src="script.js?v=0.3.3"></script>
 </body>
 </html>
