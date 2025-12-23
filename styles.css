@@ -1,0 +1,96 @@
+/* ========================================
+   BiomCYL - Custom Styles
+   ======================================== */
+
+/* Base Styles */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Animations */
+.slide-down {
+    animation: slideDown 0.3s ease-out forwards;
+    transform-origin: top;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: scaleY(0);
+        height: 0;
+    }
+    to {
+        opacity: 1;
+        transform: scaleY(1);
+        height: auto;
+    }
+}
+
+/* Eye Selector Active State */
+.eye-selected {
+    background-color: rgb(37, 99, 235) !important;
+    color: white !important;
+    border-color: rgb(37, 99, 235) !important;
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+
+@media print {
+    /* Page setup */
+    @page {
+        size: A4 portrait;
+        margin: 1.5cm;
+    }
+
+    body {
+        background: white !important;
+    }
+
+    /* Hide screen-only elements */
+    .no-print,
+    header,
+    footer,
+    .print-hide,
+    button,
+    input[type="number"],
+    input[type="text"],
+    #addMeasuredContainer,
+    #posteriorInputs {
+        display: none !important;
+    }
+
+    /* Show print-only elements */
+    .print-only {
+        display: block !important;
+    }
+
+    /* Container adjustments */
+    .max-w-md {
+        max-width: 100% !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+    }
+
+    main {
+        overflow: visible !important;
+        padding: 0 !important;
+    }
+
+    /* Avoid page breaks inside sections */
+    section {
+        page-break-inside: avoid;
+    }
+
+    /* Ensure colors and backgrounds print correctly */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}

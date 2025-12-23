@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BiomCYL</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><path d='M8 32 L8 8 L32 32 Z' fill='none' stroke='%234A90E2' stroke-width='3' stroke-linejoin='miter'/><circle cx='8' cy='32' r='2' fill='%234A90E2'/></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800">
+
+    <div class="max-w-md mx-auto min-h-screen flex flex-col bg-white shadow-xl sm:rounded-xl sm:my-8 sm:min-h-0 sm:overflow-hidden">
+
+        <!-- App Header -->
+        <header class="bg-blue-600 px-5 py-4 flex items-center justify-between shadow-sm shrink-0">
+            <div class="flex justify-between items-center w-full">
+                <div>
+                    <h1 class="text-lg font-bold text-white tracking-tight">BiomCYL</h1>
+                    <p class="text-xs text-blue-100 opacity-90">Corneal Astigmatism Analysis</p>
+                </div>
+                <button onclick="resetForm()" class="p-2 text-blue-100 hover:text-white transition-colors rounded-full hover:bg-blue-700" title="Reset Form">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Scrollable Content -->
+        <main class="flex-grow overflow-y-auto px-5 py-6 space-y-6">
+
+            <!-- Print-Only Patient Info Header -->
+            <div class="print-only hidden">
+                <div class="mb-6 pb-4 border-b-2 border-gray-300">
+                    <h1 class="text-2xl font-bold text-gray-900 mb-4">BiomCYL Analysis Report</h1>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <span class="font-semibold text-gray-600">Patient Name:</span>
+                            <span id="printPatientName" class="ml-2 text-gray-900">—</span>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-gray-600">Patient ID:</span>
+                            <span id="printPatientId" class="ml-2 text-gray-900">—</span>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-gray-600">Eye:</span>
+                            <span id="printEye" class="ml-2 text-gray-900 font-bold">—</span>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-gray-600">Date:</span>
+                            <span id="printDate" class="ml-2 text-gray-900">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient Information Section -->
+            <section class="space-y-4 print-hide">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Patient Information</h2>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-3">
+                    <!-- Patient Name -->
+                    <div class="relative">
+                        <label class="absolute text-[10px] font-semibold text-gray-500 top-2 left-3 uppercase">Patient Name</label>
+                        <input type="text" id="patientName" placeholder="Enter name"
+                            class="w-full pt-6 pb-2 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-base text-gray-900 placeholder-gray-300">
+                    </div>
+
+                    <!-- Patient ID -->
+                    <div class="relative">
+                        <label class="absolute text-[10px] font-semibold text-gray-500 top-2 left-3 uppercase">Patient ID</label>
+                        <input type="text" id="patientId" placeholder="Enter ID"
+                            class="w-full pt-6 pb-2 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-base text-gray-900 placeholder-gray-300">
+                    </div>
+
+                    <!-- Eye Selector -->
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-2">Eye <span class="text-red-500">*</span></label>
+                        <div class="flex gap-2">
+                            <button type="button" id="eyeRight" onclick="selectEye('right')"
+                                class="flex-1 py-2.5 px-4 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-600 font-semibold text-sm transition-all hover:border-blue-400 focus:outline-none">
+                                Right Eye (OD)
+                            </button>
+                            <button type="button" id="eyeLeft" onclick="selectEye('left')"
+                                class="flex-1 py-2.5 px-4 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-600 font-semibold text-sm transition-all hover:border-blue-400 focus:outline-none">
+                                Left Eye (OS)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Print Button -->
+                    <div class="pt-2">
+                        <button onclick="printReport()"
+                            class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            Print Report
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="border-gray-100">
+
+            <!-- Inputs Section -->
+            <section class="space-y-4 print-hide">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Anterior Keratometry</h2>
+                </div>
+
+                <!-- Anterior Row 1: K1 (Flat) -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="relative">
+                        <label class="absolute text-[10px] font-semibold text-gray-500 top-2 left-3 uppercase">K1 (D)</label>
+                        <input type="number" id="kFlat" step="0.01" placeholder="-" inputmode="decimal"
+                            class="w-full pt-6 pb-2 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-mono text-lg font-medium text-gray-900 placeholder-gray-300">
+                    </div>
+                    <div class="relative">
+                        <label class="absolute text-[10px] font-semibold text-gray-500 top-2 left-3 uppercase">K1 Axis (°)</label>
+                        <input type="number" id="axisFlat" min="0" max="180" step="1" placeholder="-" inputmode="numeric"
+                            class="w-full pt-6 pb-2 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-mono text-lg font-medium text-gray-900 placeholder-gray-300">
+                    </div>
+                </div>
+
+                <!-- Anterior Row 2: K2 (Steep) -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="relative">
+                        <label class="absolute text-[10px] font-semibold text-gray-500 top-2 left-3 uppercase">K2 (D)</label>
+                        <input type="number" id="kSteep" step="0.01" placeholder="-" inputmode="decimal"
+                            class="w-full pt-6 pb-2 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-mono text-lg font-medium text-gray-900 placeholder-gray-300">
+                    </div>
+                    <div class="relative">
+                        <label class="absolute text-[10px] font-semibold text-gray-500 top-2 left-3 uppercase">K2 Axis (°)</label>
+                        <input type="number" id="axisSteep" min="0" max="180" step="1" placeholder="-" inputmode="numeric"
+                            class="w-full pt-6 pb-2 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-mono text-lg font-medium text-gray-900 placeholder-gray-300">
+                    </div>
+                </div>
+
+                <!-- Add Measured Data Button -->
+                <div id="addMeasuredContainer" class="text-center pt-2">
+                    <button onclick="toggleMeasured()" class="text-xs font-semibold text-blue-600 hover:text-blue-800 underline decoration-dotted">
+                        Add measured posterior keratometry (PK)
+                    </button>
+                </div>
+
+                <!-- Measured Posterior Inputs (Hidden by default) -->
+                <div id="posteriorInputs" class="hidden space-y-4 pt-4 border-t border-gray-100 slide-down relative">
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <h2 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Posterior Keratometry</h2>
+                            <p class="text-[9px] text-gray-400 mt-0.5">(only valid for the Zeiss IOLMaster 700)</p>
+                        </div>
+                        <button onclick="resetAndHidePK()" class="text-[10px] font-semibold text-red-500 hover:text-red-700 underline decoration-dotted">
+                            Reset & Hide PK
+                        </button>
+                    </div>
+
+                    <!-- Post Row 1: PK1 (Flat) -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="relative">
+                            <label class="absolute text-[10px] font-semibold text-gray-500 top-2 left-3 uppercase">PK1 (D)</label>
+                            <input type="number" id="pkFlat" step="0.01" placeholder="-" inputmode="decimal"
+                                class="w-full pt-6 pb-2 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-mono text-lg font-medium text-gray-900 placeholder-gray-300">
+                        </div>
+                        <div class="relative">
+                            <label class="absolute text-[10px] font-semibold text-gray-500 top-2 left-3 uppercase">PK1 Axis (°)</label>
+                            <input type="number" id="pAxisFlat" min="0" max="180" step="1" placeholder="-" inputmode="numeric"
+                                class="w-full pt-6 pb-2 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-mono text-lg font-medium text-gray-900 placeholder-gray-300">
+                        </div>
+                    </div>
+
+                    <!-- Post Row 2: PK2 (Steep) -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="relative">
+                            <label class="absolute text-[10px] font-semibold text-gray-500 top-2 left-3 uppercase">PK2 (D)</label>
+                            <input type="number" id="pkSteep" step="0.01" placeholder="-" inputmode="decimal"
+                                class="w-full pt-6 pb-2 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-mono text-lg font-medium text-gray-900 placeholder-gray-300">
+                        </div>
+                        <div class="relative">
+                            <label class="absolute text-[10px] font-semibold text-gray-500 top-2 left-3 uppercase">PK2 Axis (°)</label>
+                            <input type="number" id="pAxisSteep" min="0" max="180" step="1" placeholder="-" inputmode="numeric"
+                                class="w-full pt-6 pb-2 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-mono text-lg font-medium text-gray-900 placeholder-gray-300">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="border-gray-100">
+
+            <!-- Results Section -->
+            <section class="space-y-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Analysis</h2>
+                </div>
+
+                <!-- Unified Analysis Card -->
+                <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-4">
+
+                    <!-- Section: Anterior / Measured K -->
+                    <div class="grid grid-cols-2 gap-4 items-center">
+                        <div>
+                            <div class="text-[9px] text-gray-400 uppercase font-semibold mb-0.5">K1</div>
+                            <div class="font-mono text-sm text-gray-700 font-medium"><span id="dispK1">--</span> D @ <span id="dispK1Axis">--</span>°</div>
+                        </div>
+                        <div>
+                            <div class="text-[9px] text-gray-400 uppercase font-semibold mb-0.5">K2</div>
+                            <div class="font-mono text-sm text-gray-700 font-medium"><span id="dispK2">--</span> D @ <span id="dispK2Axis">--</span>°</div>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline justify-between border-b border-gray-100 pb-3">
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-base font-bold text-gray-500">ΔK</span>
+                            <div class="text-2xl font-bold text-gray-800 leading-none" id="resMeasMag">-- D</div>
+                            <div class="text-xs text-gray-500 font-mono" id="resMeasAxis">@ --°</div>
+                        </div>
+                        <div id="axisTypeBadge" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-gray-200 text-gray-500 hidden uppercase tracking-wider">--</div>
+                    </div>
+
+                    <!-- Section: Posterior (Conditional) -->
+                    <div id="pkSection" class="hidden space-y-4 slide-down">
+                        <div class="grid grid-cols-2 gap-4 items-center">
+                            <div>
+                                <div class="text-[9px] text-gray-400 uppercase font-semibold mb-0.5">PK1</div>
+                                <div class="font-mono text-sm text-gray-700 font-medium"><span id="dispPk1">--</span> D @ <span id="dispPk1Axis">--</span>°</div>
+                            </div>
+                            <div>
+                                <div class="text-[9px] text-gray-400 uppercase font-semibold mb-0.5">PK2</div>
+                                <div class="font-mono text-sm text-gray-700 font-medium"><span id="dispPk2">--</span> D @ <span id="dispPk2Axis">--</span>°</div>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline gap-2 border-b border-gray-100 pb-3">
+                            <span class="text-base font-bold text-gray-500">ΔPK</span>
+                            <div class="text-2xl font-bold text-gray-800 leading-none" id="resPkMag">-- D</div>
+                            <div class="text-xs text-gray-500 font-mono" id="resPkAxis">@ --°</div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Total K (Conditional) -->
+                    <div id="tkSection" class="hidden space-y-4 slide-down">
+                        <div class="grid grid-cols-2 gap-4 items-center">
+                            <div>
+                                <div class="text-[9px] text-indigo-400 uppercase font-semibold mb-0.5">TK1</div>
+                                <div class="font-mono text-sm text-indigo-900 font-medium"><span id="resTk1">--</span> D @ <span id="resTk1Axis">--</span>°</div>
+                            </div>
+                            <div>
+                                <div class="text-[9px] text-indigo-400 uppercase font-semibold mb-0.5">TK2</div>
+                                <div class="font-mono text-sm text-indigo-900 font-medium"><span id="resTk2">--</span> D @ <span id="resTk2Axis">--</span>°</div>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline gap-2 border-b border-gray-100 pb-3">
+                            <span class="text-base font-bold text-indigo-500">ΔTK</span>
+                            <div class="text-2xl font-bold text-indigo-900 leading-none" id="resTkNetMag">-- D</div>
+                            <div class="text-sm text-indigo-700 font-mono" id="resTkNetAxis">@ --°</div>
+                        </div>
+                    </div>
+
+                    <!-- Section: AKRK -->
+                    <div class="flex items-baseline gap-2 pt-1">
+                        <span class="text-base font-bold text-blue-500">ΔAKRK</span>
+                        <div class="text-2xl font-bold text-blue-900 leading-none" id="resAkMag">-- D</div>
+                        <div class="text-sm text-blue-700 font-mono" id="resAkAxis">@ --°</div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="text-[9px] text-gray-400 leading-tight pt-2 mt-2 border-t border-gray-50">
+                        <strong>AKRK:</strong> Abulafia-Koch Regression (Estimated Total).
+                    </div>
+                </div>
+
+            </section>
+        </main>
+
+        <footer class="px-5 py-4 bg-gray-50 border-t border-gray-100 text-[10px] text-gray-400 text-center">
+            <p>Developed by Miguel Raimundo</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
