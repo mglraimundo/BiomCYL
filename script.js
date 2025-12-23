@@ -118,6 +118,81 @@
         target.value = otherAxis;
     }
 
+    /**
+     * Normalizes decimal input by converting comma to period for type="number" fields
+     * Handles keyboard input, paste, and autocomplete scenarios
+     * @param {HTMLInputElement} inputElement - The input field to normalize
+     */
+    function normalizeDecimalInput(inputElement) {
+        // Primary handler: beforeinput (fires before value changes)
+        inputElement.addEventListener('beforeinput', (e) => {
+            // Only process text insertion events
+            if (!e.data || !e.inputType.startsWith('insert')) return;
+
+            // If input contains comma, convert to period
+            if (e.data.includes(',')) {
+                e.preventDefault();
+
+                const start = e.target.selectionStart;
+                const end = e.target.selectionEnd;
+                const currentValue = e.target.value;
+
+                // Replace commas with periods in the incoming data
+                const normalizedData = e.data.replace(/,/g, '.');
+
+                // Build new value
+                const beforeSelection = currentValue.substring(0, start);
+                const afterSelection = currentValue.substring(end);
+
+                // Check if we're creating multiple decimal points
+                const remainingValue = beforeSelection + afterSelection;
+                if (normalizedData.includes('.') && remainingValue.includes('.')) {
+                    // Don't allow multiple decimal separators
+                    return;
+                }
+
+                // Set new value
+                const newValue = beforeSelection + normalizedData + afterSelection;
+                e.target.value = newValue;
+
+                // Restore cursor position
+                const newCursorPos = start + normalizedData.length;
+                e.target.setSelectionRange(newCursorPos, newCursorPos);
+
+                // Manually trigger input event for calculate()
+                e.target.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        });
+
+        // Fallback handler: input (for paste, autocomplete, older browsers)
+        inputElement.addEventListener('input', (e) => {
+            const value = e.target.value;
+
+            if (!value || !value.includes(',')) return;
+
+            const cursorPos = e.target.selectionStart;
+
+            // Replace commas with periods
+            let normalizedValue = value.replace(/,/g, '.');
+
+            // Handle multiple decimal separators (keep only first)
+            const firstDotIndex = normalizedValue.indexOf('.');
+            if (firstDotIndex !== -1) {
+                const beforeDot = normalizedValue.substring(0, firstDotIndex);
+                const afterDot = normalizedValue.substring(firstDotIndex + 1);
+                const cleanedAfter = afterDot.replace(/\./g, ''); // Remove additional dots
+                normalizedValue = beforeDot + '.' + cleanedAfter;
+            }
+
+            // Only update if value changed
+            if (normalizedValue !== value) {
+                e.target.value = normalizedValue;
+                // Restore cursor position
+                e.target.setSelectionRange(cursorPos, cursorPos);
+            }
+        });
+    }
+
     // ==========================================
     // UI LOGIC FUNCTIONS
     // ==========================================
@@ -581,7 +656,10 @@
 
     ['kFlat', 'kSteep', 'pkFlat', 'pkSteep'].forEach(id => {
         const el = document.getElementById(id);
-        if(el) el.addEventListener('input', calculate);
+        if(el) {
+            normalizeDecimalInput(el); // Add comma-to-period normalization
+            el.addEventListener('input', calculate); // Existing handler
+        }
     });
 
     // ==========================================
