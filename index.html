@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BiomCYL</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><path d='M8 32 L8 8 L32 32 Z' fill='none' stroke='%234A90E2' stroke-width='3' stroke-linejoin='miter'/><circle cx='8' cy='32' r='2' fill='%234A90E2'/></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><line x1='10' y1='38' x2='38' y2='38' stroke='%234A90E2' stroke-width='3' stroke-linecap='round'/><line x1='10' y1='38' x2='24' y2='12' stroke='%234A90E2' stroke-width='3' stroke-linecap='round'/><path d='M 16 38 A 8 8 0 0 1 13.5 31' fill='none' stroke='%234A90E2' stroke-width='2'/><text x='20' y='35' font-size='12' fill='%234A90E2' font-family='Arial'>θ</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -15,9 +15,17 @@
         <!-- App Header -->
         <header class="bg-blue-600 px-5 py-4 flex items-center justify-between shadow-sm shrink-0">
             <div class="flex justify-between items-center w-full">
-                <div>
-                    <h1 class="text-lg font-bold text-white tracking-tight">BiomCYL</h1>
-                    <p class="text-xs text-blue-100 opacity-90">Corneal Astigmatism Analysis</p>
+                <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="w-8 h-8 shrink-0">
+                        <line x1="10" y1="38" x2="38" y2="38" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="10" y1="38" x2="24" y2="12" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M 16 38 A 8 8 0 0 1 13.5 31" fill="none" stroke="white" stroke-width="2"/>
+                        <text x="20" y="35" font-size="12" fill="white" font-family="Arial">θ</text>
+                    </svg>
+                    <div>
+                        <h1 class="text-lg font-bold text-white tracking-tight">BiomCYL</h1>
+                        <p class="text-xs text-blue-100 opacity-90">Corneal Astigmatism Analysis</p>
+                    </div>
                 </div>
                 <button onclick="resetForm()" class="p-2 text-blue-100 hover:text-white transition-colors rounded-full hover:bg-blue-700" title="Reset Form">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
