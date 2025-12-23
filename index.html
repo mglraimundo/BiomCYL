@@ -6,7 +6,7 @@
     <title>BiomCYL</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><line x1='10' y1='38' x2='38' y2='38' stroke='%234A90E2' stroke-width='3' stroke-linecap='round'/><line x1='10' y1='38' x2='24' y2='12' stroke='%234A90E2' stroke-width='3' stroke-linecap='round'/><path d='M 16 38 A 8 8 0 0 1 13.5 31' fill='none' stroke='%234A90E2' stroke-width='2'/><text x='20' y='35' font-size='12' fill='%234A90E2' font-family='Arial'>θ</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css?v=0.2.1">
+    <link rel="stylesheet" href="styles.css?v=0.3.0">
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-800">
 
@@ -276,6 +276,12 @@
                             <span id="resTkNetAxis" class="hidden font-mono text-base text-gray-500 text-left pl-2">@ --°</span>
                             <span id="deltaTkSpacer" class="hidden pl-4"></span>
 
+                            <!-- ΔSO Row -->
+                            <span class="text-base font-bold text-blue-500 text-right pr-3">ΔSO</span>
+                            <span class="font-mono text-base font-semibold text-gray-800 text-left" id="resSoMag">-- D</span>
+                            <span class="font-mono text-base text-gray-500 text-left pl-2" id="resSoAxis">@ --°</span>
+                            <span class="pl-4"></span>
+
                             <!-- ΔAK Row -->
                             <span class="text-base font-bold text-blue-500 text-right pr-3">ΔAK</span>
                             <span class="font-mono text-base font-semibold text-gray-800 text-left" id="resAkMag">-- D</span>
@@ -287,7 +293,8 @@
                     <!-- Legend -->
                     <div class="mt-4 pt-3 border-t border-gray-100">
                         <p class="text-[9px] text-gray-400 leading-relaxed">
-                            <strong class="text-gray-500">ΔAK</strong> keratometry adjusted by the Abulafia-Koch regression
+                            <strong class="text-gray-500">ΔSO</strong> astigmatism optimized by the Savini method (<a href="https://doi.org/10.1016/j.jcrs.2017.06.040" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">JCRS 2017</a>)<br>
+                            <strong class="text-gray-500">ΔAK</strong> astigmatism optimized by the Abulafia-Koch regression (<a href="https://doi.org/10.1016/j.jcrs.2016.02.038" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">JCRS 2016</a>)
                         </p>
                     </div>
                 </div>
@@ -296,11 +303,11 @@
         </main>
 
         <footer class="px-5 py-4 bg-gray-50 border-t border-gray-100 text-[10px] text-gray-400 text-center">
-            <p class="font-semibold">BiomCYL 0.2.1</p>
+            <p class="font-semibold">BiomCYL 0.3.0</p>
             <p>Developed by Miguel Raimundo</p>
         </footer>
     </div>
 
-    <script src="script.js?v=0.2.1"></script>
+    <script src="script.js?v=0.3.0"></script>
 </body>
 </html>

@@ -9,6 +9,11 @@
     const AK_INTERCEPT_Y = 0.009;
     const AK_SLOPE_Y = 0.932;
 
+    // Savini Optimized Astigmatism (Placido) - Savini et al. JCRS 2017
+    const SO_INTERCEPT = 0.103;
+    const SO_SLOPE = 0.836;
+    const SO_COS_COEFF = 0.457;
+
     const IDX_SIMK = 1.3375;
     const IDX_ANT = 1.376;
 
@@ -55,6 +60,10 @@
         // AK Regression Output
         resAkMag: document.getElementById('resAkMag'),
         resAkAxis: document.getElementById('resAkAxis'),
+
+        // SO (Savini Optimized) Output
+        resSoMag: document.getElementById('resSoMag'),
+        resSoAxis: document.getElementById('resSoAxis'),
 
         // Posterior Output Display
         pkValuesRow: document.getElementById('pkValuesRow'),
@@ -479,6 +488,8 @@
         els.dispK2Axis.innerText = "--";
         els.resMeasMag.innerText = "-- D";
         els.resMeasAxis.innerText = "@ --°";
+        els.resSoMag.innerText = "-- D";
+        els.resSoAxis.innerText = "@ --°";
         els.resAkMag.innerText = "-- D";
         els.resAkAxis.innerText = "@ --°";
         els.resTkNetMag.innerText = "-- D";
@@ -536,10 +547,13 @@
         els.resMeasMag.innerText = "+" + cylMeas.toFixed(2) + " D";
         els.resMeasAxis.innerText = "@ " + axisSteep.toFixed(0) + "°";
 
-        // --- 2. AK Regression ---
+        // --- 2. SO (Savini Optimized) ---
+        calculateSO(cylMeas, axisSteep);
+
+        // --- 3. AK Regression ---
         calculateAK(cylMeas, axisSteep);
 
-        // --- 3. TK (Measured) ---
+        // --- 4. TK (Measured) ---
         if (isMeasuredVisible) {
             calculateTK(kFlat, kSteep, axisSteep);
         }
@@ -562,6 +576,28 @@
 
         els.resAkMag.innerText = "+" + cylNet.toFixed(2) + " D";
         els.resAkAxis.innerText = "@ " + axisNet.toFixed(0) + "°";
+    }
+
+    function calculateSO(cylMeas, axisSteep) {
+        // Convert axis to radians for the cosine term
+        const axisRad = toRadians(axisSteep);
+
+        // Apply Savini Placido regression: 0.103 + 0.836 × KA + 0.457 × cos(2α)
+        let optimizedMag = SO_INTERCEPT + (SO_SLOPE * cylMeas) + (SO_COS_COEFF * Math.cos(2 * axisRad));
+
+        // Handle negative magnitude: flip axis by 90 degrees
+        let optimizedAxis = axisSteep;
+        if (optimizedMag < 0) {
+            optimizedMag = Math.abs(optimizedMag);
+            optimizedAxis = normalizeAxis(axisSteep + 90);
+        }
+
+        // Normalize axis to [1, 180] range
+        optimizedAxis = normalizeAxis(optimizedAxis);
+
+        // Display results
+        els.resSoMag.innerText = "+" + optimizedMag.toFixed(2) + " D";
+        els.resSoAxis.innerText = "@ " + optimizedAxis.toFixed(0) + "°";
     }
 
     function calculateTK(kFlatSim, kSteepSim, axisSteepAnt) {
