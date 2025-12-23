@@ -82,6 +82,7 @@
         resTkNetMag: document.getElementById('resTkNetMag'),
         resTkNetAxis: document.getElementById('resTkNetAxis'),
         deltaTkSpacer: document.getElementById('deltaTkSpacer'),
+        deltaTkLegend: document.getElementById('deltaTkLegend'),
 
         // UI Elements
         posteriorInputs: document.getElementById('posteriorInputs'),
@@ -230,6 +231,7 @@
         els.resTkNetMag.classList.add('hidden');
         els.resTkNetAxis.classList.add('hidden');
         els.deltaTkSpacer.classList.add('hidden');
+        els.deltaTkLegend.classList.add('hidden');
         
         calculate();
     }
@@ -616,6 +618,7 @@
             els.resTkNetMag.classList.add('hidden');
             els.resTkNetAxis.classList.add('hidden');
             els.deltaTkSpacer.classList.add('hidden');
+            els.deltaTkLegend.classList.add('hidden');
             return;
         }
 
@@ -627,6 +630,7 @@
         els.resTkNetMag.classList.remove('hidden');
         els.resTkNetAxis.classList.remove('hidden');
         els.deltaTkSpacer.classList.remove('hidden');
+        els.deltaTkLegend.classList.remove('hidden');
 
         // --- Display Measured Posterior ---
         // Display raw inputs
