@@ -53,7 +53,7 @@ Visit: https://mglraimundo.github.io/BiomCYL/
 
 - **AKRK**: Abulafia-Koch Regression estimates total corneal power
 - **TK**: Total Keratometry requires measured posterior values
-- **Liou-Brennan Scale Factor**: Calibrated to 1.0205 for IOLMaster 700 compatibility
+- **Liou-Brennan Scale Factor**: Tweaked to 1.0205 for IOLMaster 700 compatibility
 - **Axis Convention**: WTR (With-The-Rule), ATR (Against-The-Rule), OBL (Oblique)
 
 ## License
