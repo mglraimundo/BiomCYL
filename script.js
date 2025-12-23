@@ -78,6 +78,7 @@
         posteriorInputs: document.getElementById('posteriorInputs'),
         addMeasuredContainer: document.getElementById('addMeasuredContainer'),
         axisTypeBadge: document.getElementById('axisTypeBadge'),
+        analysisSection: document.getElementById('analysisSection'),
 
         // Patient Data Elements
         patientName: document.getElementById('patientName'),
@@ -421,7 +422,15 @@
 
         if (isNaN(kFlat) || isNaN(kSteep) || isNaN(axisSteep)) {
             clearResults();
+            if (els.analysisSection) {
+                els.analysisSection.classList.add('hidden');
+            }
             return;
+        }
+
+        // Show analysis section when we have valid data
+        if (els.analysisSection) {
+            els.analysisSection.classList.remove('hidden');
         }
 
         // --- 1. Measured Anterior (SimK) ---
