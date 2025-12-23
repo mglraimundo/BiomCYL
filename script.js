@@ -24,6 +24,10 @@
     let isMeasuredVisible = false;
     let selectedEye = null;
 
+    // BiomPIN Data Cache
+    let cachedBiomData = null; // Structure: { patient, right_eye, left_eye, has_pk, pk_data }
+    let isLoadingBiomPin = false;
+
     // ==========================================
     // DOM ELEMENTS CACHE
     // ==========================================
@@ -81,11 +85,12 @@
         eyeRight: document.getElementById('eyeRight'),
         eyeLeft: document.getElementById('eyeLeft'),
 
-        // Print Elements
-        printPatientName: document.getElementById('printPatientName'),
-        printPatientId: document.getElementById('printPatientId'),
-        printEye: document.getElementById('printEye'),
-        printDate: document.getElementById('printDate')
+        // BiomPIN Elements
+        biomPinInput: document.getElementById('biomPinInput'),
+        loadBiomPinBtn: document.getElementById('loadBiomPinBtn'),
+        loadBtnText: document.getElementById('loadBtnText'),
+        loadBtnSpinner: document.getElementById('loadBtnSpinner'),
+        biomPinMessage: document.getElementById('biomPinMessage')
     };
 
     // ==========================================
@@ -148,41 +153,212 @@
             els.eyeLeft.classList.add('eye-selected');
             els.eyeRight.classList.remove('eye-selected');
         }
+
+        // Populate form with cached data if available
+        if (cachedBiomData) {
+            populateEyeData(eye);
+        }
     }
 
-    function printReport() {
-        // Validate eye selection
-        if (!selectedEye) {
-            alert('Please select an eye (Right or Left) before printing.');
+    /**
+     * Extracts BiomPIN from user input (handles raw PIN or full URLs)
+     * @param {string} input - Raw user input
+     * @returns {string|null} - Extracted PIN or null if invalid
+     */
+    function extractBiomPIN(input) {
+        if (!input || typeof input !== 'string') return null;
+
+        const trimmed = input.trim();
+        const pinRegex = /([a-z]+-[a-z]+-\d{6})/i;
+        const match = trimmed.match(pinRegex);
+
+        return match ? match[1].toLowerCase() : null;
+    }
+
+    /**
+     * Toggles loading state for BiomPIN UI
+     * @param {boolean} loading - Whether loading is in progress
+     */
+    function setLoadingState(loading) {
+        isLoadingBiomPin = loading;
+
+        if (loading) {
+            els.biomPinInput.disabled = true;
+            els.loadBiomPinBtn.disabled = true;
+            els.loadBtnText.classList.add('hidden');
+            els.loadBtnSpinner.classList.remove('hidden');
+        } else {
+            els.biomPinInput.disabled = false;
+            els.loadBiomPinBtn.disabled = false;
+            els.loadBtnText.classList.remove('hidden');
+            els.loadBtnSpinner.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Displays success or error message
+     * @param {string} message - Message text
+     * @param {string} type - 'success', 'error', or 'info'
+     */
+    function showBiomPinMessage(message, type = 'info') {
+        const messageEl = els.biomPinMessage;
+        messageEl.textContent = message;
+        messageEl.classList.remove('hidden');
+
+        messageEl.classList.remove('bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700', 'bg-blue-100', 'text-blue-700');
+
+        if (type === 'success') {
+            messageEl.classList.add('bg-green-100', 'text-green-700');
+            setTimeout(() => messageEl.classList.add('hidden'), 5000);
+        } else if (type === 'error') {
+            messageEl.classList.add('bg-red-100', 'text-red-700');
+        } else {
+            messageEl.classList.add('bg-blue-100', 'text-blue-700');
+        }
+    }
+
+    /**
+     * Clears all form inputs
+     */
+    function clearFormData() {
+        els.patientName.value = '';
+        els.patientId.value = '';
+        els.kFlat.value = '';
+        els.kSteep.value = '';
+        els.axisFlat.value = '';
+        els.axisSteep.value = '';
+        els.pkFlat.value = '';
+        els.pkSteep.value = '';
+        els.pAxisFlat.value = '';
+        els.pAxisSteep.value = '';
+
+        selectedEye = null;
+        els.eyeRight.classList.remove('eye-selected');
+        els.eyeLeft.classList.remove('eye-selected');
+
+        clearResults();
+    }
+
+    /**
+     * Populates form with keratometry data for specific eye from cache
+     * @param {string} eye - 'right' or 'left'
+     */
+    function populateEyeData(eye) {
+        if (!cachedBiomData) return;
+
+        const eyeKey = eye + '_eye';
+        const eyeData = cachedBiomData[eyeKey];
+
+        if (!eyeData) return;
+
+        // Populate anterior keratometry
+        els.kFlat.value = eyeData.K1_magnitude || '';
+        els.axisFlat.value = eyeData.K1_axis || '';
+        els.kSteep.value = eyeData.K2_magnitude || '';
+        els.axisSteep.value = eyeData.K2_axis || '';
+
+        // Populate posterior keratometry if available
+        if (cachedBiomData.has_pk && cachedBiomData.pk_data) {
+            const pkData = cachedBiomData.pk_data[eyeKey];
+            if (pkData) {
+                els.pkFlat.value = pkData.PK1_magnitude || '';
+                els.pAxisFlat.value = pkData.PK1_axis || '';
+                els.pkSteep.value = pkData.PK2_magnitude || '';
+                els.pAxisSteep.value = pkData.PK2_axis || '';
+            }
+        }
+
+        calculate();
+    }
+
+    /**
+     * Loads biometry data from BiomPIN API
+     */
+    async function loadBiomPIN() {
+        if (isLoadingBiomPin) return;
+
+        const inputValue = els.biomPinInput.value;
+        const pin = extractBiomPIN(inputValue);
+
+        if (!pin) {
+            showBiomPinMessage('Invalid BiomPIN format. Expected: word-word-123456', 'error');
             return;
         }
 
-        // Optional: Validate data exists
-        const kFlat = parseFloat(els.kFlat.value);
-        const kSteep = parseFloat(els.kSteep.value);
+        setLoadingState(true);
+        showBiomPinMessage('Loading biometry data...', 'info');
 
-        if (isNaN(kFlat) || isNaN(kSteep)) {
-            const confirmPrint = confirm('No analysis results available. Print anyway?');
-            if (!confirmPrint) return;
+        try {
+            const apiUrl = `https://biomapi.com/api/v1/biom/retrieve?biom_pin=${encodeURIComponent(pin)}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            });
+
+            if (!response.ok) {
+                throw new Error(`API request failed with status ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.message || 'API returned unsuccessful response');
+            }
+
+            if (!data.data?.patient || !data.data?.right_eye || !data.data?.left_eye) {
+                throw new Error('Invalid response structure from API');
+            }
+
+            processBiomData(data);
+            showBiomPinMessage(`Loaded data for ${data.data.patient.name || 'patient'}`, 'success');
+
+        } catch (error) {
+            console.error('BiomPIN load error:', error);
+            showBiomPinMessage(`Error: ${error.message}`, 'error');
+        } finally {
+            setLoadingState(false);
+        }
+    }
+
+    /**
+     * Processes API response and populates form
+     * @param {Object} apiResponse - Full API response
+     */
+    function processBiomData(apiResponse) {
+        const { data, extra_data } = apiResponse;
+
+        clearFormData();
+
+        const hasPK = extra_data?.posterior_keratometry?.right_eye &&
+                      extra_data?.posterior_keratometry?.left_eye;
+
+        cachedBiomData = {
+            patient: data.patient,
+            right_eye: data.right_eye,
+            left_eye: data.left_eye,
+            has_pk: hasPK,
+            pk_data: hasPK ? extra_data.posterior_keratometry : null
+        };
+
+        // Populate patient info
+        if (data.patient.name) {
+            els.patientName.value = data.patient.name;
+        }
+        if (data.patient.patient_id) {
+            els.patientId.value = data.patient.patient_id;
         }
 
-        // Populate print-only fields
-        const patientName = els.patientName.value || 'Not provided';
-        const patientId = els.patientId.value || 'Not provided';
-        const eyeText = selectedEye === 'right' ? 'Right Eye (OD)' : 'Left Eye (OS)';
-        const currentDate = new Date().toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+        // Show PK section if data exists
+        if (hasPK && !isMeasuredVisible) {
+            toggleMeasured();
+        } else if (!hasPK && isMeasuredVisible) {
+            resetAndHidePK();
+        }
 
-        els.printPatientName.textContent = patientName;
-        els.printPatientId.textContent = patientId;
-        els.printEye.textContent = eyeText;
-        els.printDate.textContent = currentDate;
-
-        // Trigger browser print dialog
-        window.print();
+        // Default to right eye
+        selectEye('right');
+        populateEyeData('right');
     }
 
     function updateBadge(axis) {
@@ -223,13 +399,15 @@
     }
 
     function resetForm() {
-        ['kFlat', 'kSteep', 'axisFlat', 'axisSteep', 'pkFlat', 'pkSteep', 'pAxisFlat', 'pAxisSteep'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = "";
-        });
+        // Clear BiomPIN cache and input
+        cachedBiomData = null;
+        if (els.biomPinInput) els.biomPinInput.value = '';
+        if (els.biomPinMessage) els.biomPinMessage.classList.add('hidden');
+
+        // Clear form data
+        clearFormData();
         resetAndHidePK();
         updateBadge(NaN);
-        clearResults();
     }
 
     // ==========================================
@@ -410,6 +588,6 @@
     window.toggleMeasured = toggleMeasured;
     window.resetAndHidePK = resetAndHidePK;
     window.selectEye = selectEye;
-    window.printReport = printReport;
+    window.loadBiomPIN = loadBiomPIN;
 
 })();

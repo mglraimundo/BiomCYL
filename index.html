@@ -30,33 +30,48 @@
         <!-- Main Scrollable Content -->
         <main class="flex-grow overflow-y-auto px-5 py-6 space-y-6">
 
-            <!-- Print-Only Patient Info Header -->
-            <div class="print-only hidden">
-                <div class="mb-6 pb-4 border-b-2 border-gray-300">
-                    <h1 class="text-2xl font-bold text-gray-900 mb-4">BiomCYL Analysis Report</h1>
-                    <div class="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                            <span class="font-semibold text-gray-600">Patient Name:</span>
-                            <span id="printPatientName" class="ml-2 text-gray-900">—</span>
-                        </div>
-                        <div>
-                            <span class="font-semibold text-gray-600">Patient ID:</span>
-                            <span id="printPatientId" class="ml-2 text-gray-900">—</span>
-                        </div>
-                        <div>
-                            <span class="font-semibold text-gray-600">Eye:</span>
-                            <span id="printEye" class="ml-2 text-gray-900 font-bold">—</span>
-                        </div>
-                        <div>
-                            <span class="font-semibold text-gray-600">Date:</span>
-                            <span id="printDate" class="ml-2 text-gray-900">—</span>
-                        </div>
+            <!-- BiomPIN Load Section -->
+            <section class="bg-gradient-to-br from-blue-50 to-indigo-50 border-b border-blue-100 px-5 py-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xs font-bold uppercase text-gray-600 tracking-wider">Load from BiomPIN</h2>
+                        <p class="text-[9px] text-gray-500 mt-0.5">Import biometry data from BiomAPI</p>
                     </div>
                 </div>
-            </div>
+
+                <div class="flex gap-2">
+                    <div class="flex-1 relative">
+                        <input
+                            type="text"
+                            id="biomPinInput"
+                            placeholder="word-word-123456 or paste URL"
+                            aria-label="Enter BiomPIN or paste BiomAPI URL"
+                            class="w-full py-2.5 px-3 bg-white border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm text-gray-900 placeholder-gray-400"
+                        >
+                    </div>
+                    <button
+                        type="button"
+                        id="loadBiomPinBtn"
+                        onclick="loadBiomPIN()"
+                        aria-label="Load biometry data from BiomPIN"
+                        class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm rounded-lg transition-all shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
+                    >
+                        <span id="loadBtnText">Load</span>
+                        <span id="loadBtnSpinner" class="hidden">
+                            <svg class="animate-spin h-4 w-4 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Message Area -->
+                <div id="biomPinMessage" role="status" aria-live="polite" class="hidden text-xs px-3 py-2 rounded-lg"></div>
+            </section>
 
             <!-- Patient Information Section -->
-            <section class="space-y-4 print-hide">
+            <section class="space-y-4">
                 <div class="flex items-center justify-between mb-2">
                     <h2 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Patient Information</h2>
                 </div>
@@ -78,7 +93,7 @@
 
                     <!-- Eye Selector -->
                     <div>
-                        <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-2">Eye <span class="text-red-500">*</span></label>
+                        <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-2">Eye</label>
                         <div class="flex gap-2">
                             <button type="button" id="eyeRight" onclick="selectEye('right')"
                                 class="flex-1 py-2.5 px-4 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-600 font-semibold text-sm transition-all hover:border-blue-400 focus:outline-none">
@@ -90,24 +105,13 @@
                             </button>
                         </div>
                     </div>
-
-                    <!-- Print Button -->
-                    <div class="pt-2">
-                        <button onclick="printReport()"
-                            class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                            </svg>
-                            Print Report
-                        </button>
-                    </div>
                 </div>
             </section>
 
             <hr class="border-gray-100">
 
             <!-- Inputs Section -->
-            <section class="space-y-4 print-hide">
+            <section class="space-y-4">
                 <div class="flex items-center justify-between mb-2">
                     <h2 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Anterior Keratometry</h2>
                 </div>
@@ -267,7 +271,7 @@
 
                     <!-- Legend -->
                     <div class="text-[9px] text-gray-400 leading-tight pt-2 mt-2 border-t border-gray-50">
-                        <strong>AKRK:</strong> Abulafia-Koch Regression (Estimated Total).
+                        <strong>AKRK:</strong> Abulafia-Koch Regression (for PCA estimation).
                     </div>
                 </div>
 
