@@ -6,7 +6,7 @@
     <title>BiomCYL</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><line x1='10' y1='38' x2='38' y2='38' stroke='%234A90E2' stroke-width='3' stroke-linecap='round'/><line x1='10' y1='38' x2='24' y2='12' stroke='%234A90E2' stroke-width='3' stroke-linecap='round'/><path d='M 16 38 A 8 8 0 0 1 13.5 31' fill='none' stroke='%234A90E2' stroke-width='2'/><text x='20' y='35' font-size='12' fill='%234A90E2' font-family='Arial'>θ</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css?v=0.1.2">
+    <link rel="stylesheet" href="styles.css?v=0.2.0">
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-800">
 
@@ -103,8 +103,10 @@
 
             <!-- Eye Selector Section -->
             <section class="space-y-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Eye</h2>
+                </div>
                 <div>
-                    <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-2">Eye</label>
                     <div class="flex gap-2">
                         <button type="button" id="eyeRight" onclick="selectEye('right')"
                             class="flex-1 py-2.5 px-4 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-600 font-semibold text-sm transition-all hover:border-blue-400 focus:outline-none">
@@ -123,7 +125,10 @@
             <!-- Inputs Section -->
             <section class="space-y-4">
                 <div class="flex items-center justify-between mb-2">
-                    <h2 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Anterior Keratometry</h2>
+                    <div>
+                        <h2 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Anterior Keratometry</h2>
+                        <p class="text-[9px] text-gray-400 mt-0.5">(n=1.3375)</p>
+                    </div>
                 </div>
 
                 <!-- Anterior Row 1: K1 (Flat) -->
@@ -156,8 +161,8 @@
 
                 <!-- Add Measured Data Button -->
                 <div id="addMeasuredContainer" class="text-center pt-2">
-                    <button onclick="toggleMeasured()" class="text-xs font-semibold text-blue-600 hover:text-blue-800 underline decoration-dotted">
-                        Add measured posterior keratometry (PK)
+                    <button onclick="toggleMeasured()" class="text-xs font-semibold text-blue-600 hover:text-blue-800">
+                        + add measured posterior keratometry (PK)
                     </button>
                 </div>
 
@@ -168,8 +173,8 @@
                             <h2 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Posterior Keratometry</h2>
                             <p class="text-[9px] text-gray-400 mt-0.5">(only valid for the Zeiss IOLMaster 700)</p>
                         </div>
-                        <button onclick="resetAndHidePK()" class="text-[10px] font-semibold text-red-500 hover:text-red-700 underline decoration-dotted">
-                            Reset & Hide PK
+                        <button onclick="resetAndHidePK()" class="text-[10px] font-semibold text-red-500 hover:text-red-700">
+                            × reset and hide PK
                         </button>
                     </div>
 
@@ -212,76 +217,78 @@
                 </div>
 
                 <!-- Unified Analysis Card -->
-                <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-4">
+                <div class="analysis-card bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
 
-                    <!-- Section: Anterior / Measured K -->
-                    <div class="grid grid-cols-2 gap-4 items-center">
-                        <div>
-                            <div class="text-[9px] text-gray-400 uppercase font-semibold mb-0.5">K1</div>
-                            <div class="font-mono text-sm text-gray-700 font-medium"><span id="dispK1">--</span> D @ <span id="dispK1Axis">--</span>°</div>
+                    <!-- TOP SECTION: Raw Keratometry Values -->
+                    <div class="space-y-3">
+                        <!-- K1 / K2 Row -->
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="keratometry-value">
+                                <div class="text-[10px] text-gray-400 uppercase font-semibold tracking-wide">K1</div>
+                                <div class="font-mono text-base text-gray-800 font-medium"><span id="dispK1">--</span> D <span class="text-gray-400">@</span> <span id="dispK1Axis">--</span>°</div>
+                            </div>
+                            <div class="keratometry-value">
+                                <div class="text-[10px] text-gray-400 uppercase font-semibold tracking-wide">K2</div>
+                                <div class="font-mono text-base text-gray-800 font-medium"><span id="dispK2">--</span> D <span class="text-gray-400">@</span> <span id="dispK2Axis">--</span>°</div>
+                            </div>
                         </div>
-                        <div>
-                            <div class="text-[9px] text-gray-400 uppercase font-semibold mb-0.5">K2</div>
-                            <div class="font-mono text-sm text-gray-700 font-medium"><span id="dispK2">--</span> D @ <span id="dispK2Axis">--</span>°</div>
-                        </div>
-                    </div>
-                    <div class="flex items-baseline justify-between border-b border-gray-100 pb-3">
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-base font-bold text-gray-500">ΔK</span>
-                            <div class="text-2xl font-bold text-gray-800 leading-none" id="resMeasMag">-- D</div>
-                            <div class="text-xs text-gray-500 font-mono" id="resMeasAxis">@ --°</div>
-                        </div>
-                        <div id="axisTypeBadge" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-gray-200 text-gray-500 hidden uppercase tracking-wider">--</div>
-                    </div>
 
-                    <!-- Section: Posterior (Conditional) -->
-                    <div id="pkSection" class="hidden space-y-4 slide-down">
-                        <div class="grid grid-cols-2 gap-4 items-center">
-                            <div>
-                                <div class="text-[9px] text-gray-400 uppercase font-semibold mb-0.5">PK1</div>
-                                <div class="font-mono text-sm text-gray-700 font-medium"><span id="dispPk1">--</span> D @ <span id="dispPk1Axis">--</span>°</div>
+                        <!-- TK1 / TK2 Row (Conditional) -->
+                        <div id="tkValuesRow" class="hidden grid grid-cols-2 gap-6">
+                            <div class="keratometry-value">
+                                <div class="text-[10px] text-indigo-500 uppercase font-semibold tracking-wide">TK1</div>
+                                <div class="font-mono text-base text-gray-800 font-medium"><span id="resTk1">--</span> D <span class="text-gray-400">@</span> <span id="resTk1Axis">--</span>°</div>
                             </div>
-                            <div>
-                                <div class="text-[9px] text-gray-400 uppercase font-semibold mb-0.5">PK2</div>
-                                <div class="font-mono text-sm text-gray-700 font-medium"><span id="dispPk2">--</span> D @ <span id="dispPk2Axis">--</span>°</div>
+                            <div class="keratometry-value">
+                                <div class="text-[10px] text-indigo-500 uppercase font-semibold tracking-wide">TK2</div>
+                                <div class="font-mono text-base text-gray-800 font-medium"><span id="resTk2">--</span> D <span class="text-gray-400">@</span> <span id="resTk2Axis">--</span>°</div>
                             </div>
                         </div>
-                        <div class="flex items-baseline gap-2 border-b border-gray-100 pb-3">
-                            <span class="text-base font-bold text-gray-500">ΔPK</span>
-                            <div class="text-2xl font-bold text-gray-800 leading-none" id="resPkMag">-- D</div>
-                            <div class="text-xs text-gray-500 font-mono" id="resPkAxis">@ --°</div>
-                        </div>
-                    </div>
 
-                    <!-- Section: Total K (Conditional) -->
-                    <div id="tkSection" class="hidden space-y-4 slide-down">
-                        <div class="grid grid-cols-2 gap-4 items-center">
-                            <div>
-                                <div class="text-[9px] text-indigo-400 uppercase font-semibold mb-0.5">TK1</div>
-                                <div class="font-mono text-sm text-indigo-900 font-medium"><span id="resTk1">--</span> D @ <span id="resTk1Axis">--</span>°</div>
+                        <!-- PK1 / PK2 Row (Conditional) -->
+                        <div id="pkValuesRow" class="hidden grid grid-cols-2 gap-6">
+                            <div class="keratometry-value">
+                                <div class="text-[10px] text-gray-400 uppercase font-semibold tracking-wide">PK1</div>
+                                <div class="font-mono text-base text-gray-800 font-medium"><span id="dispPk1">--</span> D <span class="text-gray-400">@</span> <span id="dispPk1Axis">--</span>°</div>
                             </div>
-                            <div>
-                                <div class="text-[9px] text-indigo-400 uppercase font-semibold mb-0.5">TK2</div>
-                                <div class="font-mono text-sm text-indigo-900 font-medium"><span id="resTk2">--</span> D @ <span id="resTk2Axis">--</span>°</div>
+                            <div class="keratometry-value">
+                                <div class="text-[10px] text-gray-400 uppercase font-semibold tracking-wide">PK2</div>
+                                <div class="font-mono text-base text-gray-800 font-medium"><span id="dispPk2">--</span> D <span class="text-gray-400">@</span> <span id="dispPk2Axis">--</span>°</div>
                             </div>
-                        </div>
-                        <div class="flex items-baseline gap-2 border-b border-gray-100 pb-3">
-                            <span class="text-base font-bold text-indigo-500">ΔTK</span>
-                            <div class="text-2xl font-bold text-indigo-900 leading-none" id="resTkNetMag">-- D</div>
-                            <div class="text-sm text-indigo-700 font-mono" id="resTkNetAxis">@ --°</div>
                         </div>
                     </div>
 
-                    <!-- Section: AKRK -->
-                    <div class="flex items-baseline gap-2 pt-1">
-                        <span class="text-base font-bold text-blue-500">ΔAKRK</span>
-                        <div class="text-2xl font-bold text-blue-900 leading-none" id="resAkMag">-- D</div>
-                        <div class="text-sm text-blue-700 font-mono" id="resAkAxis">@ --°</div>
+                    <!-- DIVIDER -->
+                    <div class="my-4 border-t border-gray-200"></div>
+
+                    <!-- BOTTOM SECTION: Delta Values (Centered Table) -->
+                    <div class="flex justify-center">
+                        <div class="inline-grid delta-grid items-center gap-y-2" style="grid-template-columns: auto auto auto auto;">
+                            <!-- ΔK Row -->
+                            <span class="text-base font-bold text-gray-500 text-right pr-3">ΔK</span>
+                            <span class="font-mono text-base font-semibold text-gray-800 text-left" id="resMeasMag">-- D</span>
+                            <span class="font-mono text-base text-gray-500 text-left pl-2" id="resMeasAxis">@ --°</span>
+                            <span class="pl-4 flex items-center"><span id="axisTypeBadge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-500 hidden uppercase tracking-wider">--</span></span>
+
+                            <!-- ΔTK Row (Conditional) -->
+                            <span id="deltaTkLabel" class="hidden text-base font-bold text-indigo-500 text-right pr-3">ΔTK</span>
+                            <span id="resTkNetMag" class="hidden font-mono text-base font-semibold text-gray-800 text-left">-- D</span>
+                            <span id="resTkNetAxis" class="hidden font-mono text-base text-gray-500 text-left pl-2">@ --°</span>
+                            <span id="deltaTkSpacer" class="hidden pl-4"></span>
+
+                            <!-- ΔAK Row -->
+                            <span class="text-base font-bold text-blue-500 text-right pr-3">ΔAK</span>
+                            <span class="font-mono text-base font-semibold text-gray-800 text-left" id="resAkMag">-- D</span>
+                            <span class="font-mono text-base text-gray-500 text-left pl-2" id="resAkAxis">@ --°</span>
+                            <span class="pl-4"></span>
+                        </div>
                     </div>
 
                     <!-- Legend -->
-                    <div class="text-[9px] text-gray-400 leading-tight pt-2 mt-2 border-t border-gray-50">
-                        <strong>AKRK:</strong> Abulafia-Koch Regression (for PCA estimation)
+                    <div class="mt-4 pt-3 border-t border-gray-100">
+                        <p class="text-[9px] text-gray-400 leading-relaxed">
+                            <strong class="text-gray-500">ΔAK</strong> keratometry adjusted by the Abulafia-Koch regression
+                        </p>
                     </div>
                 </div>
 
@@ -289,11 +296,11 @@
         </main>
 
         <footer class="px-5 py-4 bg-gray-50 border-t border-gray-100 text-[10px] text-gray-400 text-center">
-            <p class="font-semibold">BiomCYL 0.1.2</p>
+            <p class="font-semibold">BiomCYL 0.2.0</p>
             <p>Developed by Miguel Raimundo</p>
         </footer>
     </div>
 
-    <script src="script.js?v=0.1.2"></script>
+    <script src="script.js?v=0.2.0"></script>
 </body>
 </html>

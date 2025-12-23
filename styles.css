@@ -53,6 +53,62 @@ body {
 }
 
 /* ========================================
+   Analysis Card Styles
+   ======================================== */
+
+.analysis-card {
+    background: linear-gradient(to bottom, #ffffff, #fafbfc);
+}
+
+/* Keratometry Values - subtle vertical rhythm */
+.keratometry-value {
+    padding: 0.25rem 0;
+}
+
+/* Delta rows - clean horizontal alignment */
+.delta-row {
+    padding: 0.375rem 0;
+    transition: background-color 0.15s ease;
+}
+
+.delta-row:hover {
+    background-color: rgba(0, 0, 0, 0.01);
+    border-radius: 0.375rem;
+    margin: 0 -0.5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+/* Delta label styling */
+.delta-label {
+    min-width: 2.5rem;
+    letter-spacing: 0.025em;
+}
+
+/* Fade-in animation for dynamic rows */
+.slide-in {
+    animation: slideIn 0.25s ease-out forwards;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Remove hidden animation conflict */
+#tkValuesRow:not(.hidden),
+#pkValuesRow:not(.hidden),
+#deltaTkRow:not(.hidden) {
+    animation: slideIn 0.25s ease-out forwards;
+}
+
+/* ========================================
    Print Styles
    ======================================== */
 

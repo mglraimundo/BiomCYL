@@ -14,7 +14,7 @@
 
     // Liou-Brennan Scale Factor (1.02116)
     // Manually modified to match IOL700 printouts to 1.0205 as per prior instructions
-    const LIOU_BRENNAN_SCALE_FACTOR = 1.0205;
+    const MOD_LIOU_BRENNAN_SCALE_FACTOR = 1.0205;
 
     const CCT_DEFAULT = 540;
 
@@ -57,22 +57,22 @@
         resAkAxis: document.getElementById('resAkAxis'),
 
         // Posterior Output Display
-        pkSection: document.getElementById('pkSection'),
+        pkValuesRow: document.getElementById('pkValuesRow'),
         dispPk1: document.getElementById('dispPk1'),
         dispPk1Axis: document.getElementById('dispPk1Axis'),
         dispPk2: document.getElementById('dispPk2'),
         dispPk2Axis: document.getElementById('dispPk2Axis'),
-        resPkMag: document.getElementById('resPkMag'),
-        resPkAxis: document.getElementById('resPkAxis'),
 
         // Total Keratometry Output
-        tkSection: document.getElementById('tkSection'),
+        tkValuesRow: document.getElementById('tkValuesRow'),
         resTk1: document.getElementById('resTk1'),
         resTk1Axis: document.getElementById('resTk1Axis'),
         resTk2: document.getElementById('resTk2'),
         resTk2Axis: document.getElementById('resTk2Axis'),
+        deltaTkLabel: document.getElementById('deltaTkLabel'),
         resTkNetMag: document.getElementById('resTkNetMag'),
         resTkNetAxis: document.getElementById('resTkNetAxis'),
+        deltaTkSpacer: document.getElementById('deltaTkSpacer'),
 
         // UI Elements
         posteriorInputs: document.getElementById('posteriorInputs'),
@@ -199,8 +199,6 @@
     function toggleMeasured() {
         isMeasuredVisible = true;
         els.posteriorInputs.classList.remove('hidden');
-        els.tkSection.classList.remove('hidden');
-        els.pkSection.classList.remove('hidden');
         els.addMeasuredContainer.classList.add('hidden');
         calculate();
     }
@@ -213,9 +211,17 @@
         els.pAxisSteep.value = "";
 
         els.posteriorInputs.classList.add('hidden');
-        els.tkSection.classList.add('hidden');
-        els.pkSection.classList.add('hidden');
         els.addMeasuredContainer.classList.remove('hidden');
+        
+        // Hide TK and PK display rows
+        els.tkValuesRow.classList.add('hidden');
+        els.pkValuesRow.classList.add('hidden');
+        // Hide delta TK grid elements
+        els.deltaTkLabel.classList.add('hidden');
+        els.resTkNetMag.classList.add('hidden');
+        els.resTkNetAxis.classList.add('hidden');
+        els.deltaTkSpacer.classList.add('hidden');
+        
         calculate();
     }
 
@@ -327,11 +333,13 @@
 
         if (!eyeData) return;
 
-        // Populate anterior keratometry
-        els.kFlat.value = eyeData.K1_magnitude || '';
-        els.axisFlat.value = eyeData.K1_axis || '';
-        els.kSteep.value = eyeData.K2_magnitude || '';
-        els.axisSteep.value = eyeData.K2_axis || '';
+        // Populate anterior keratometry only if keratometric index matches 1.3375
+        if (eyeData.keratometric_index === IDX_SIMK) {
+            els.kFlat.value = eyeData.K1_magnitude || '';
+            els.axisFlat.value = eyeData.K1_axis || '';
+            els.kSteep.value = eyeData.K2_magnitude || '';
+            els.axisSteep.value = eyeData.K2_axis || '';
+        }
 
         // Populate posterior keratometry if available
         if (cachedBiomData.has_pk && cachedBiomData.pk_data) {
@@ -388,6 +396,9 @@
 
             processBiomData(data);
             showBiomPinMessage(`Loaded data for ${data.data.patient.name || 'patient'}`, 'success');
+            
+            // Update URL with BiomPIN for easy sharing
+            updateUrlWithPin(pin);
 
         } catch (error) {
             console.error('BiomPIN load error:', error);
@@ -484,6 +495,9 @@
         clearFormData();
         resetAndHidePK();
         updateBadge(NaN);
+        
+        // Clear URL parameter
+        clearUrlPin();
     }
 
     // ==========================================
@@ -558,10 +572,25 @@
         const cct = CCT_DEFAULT; // Hardcoded default
 
         if (isNaN(pkFlat) || isNaN(pkSteep) || isNaN(pAxisSteep)) {
-             els.resTkNetMag.innerText = "-- D";
-             els.resTkNetAxis.innerText = "@ --°";
-             return;
+            // Hide TK/PK rows when data is incomplete
+            els.tkValuesRow.classList.add('hidden');
+            els.pkValuesRow.classList.add('hidden');
+            // Hide delta TK grid elements
+            els.deltaTkLabel.classList.add('hidden');
+            els.resTkNetMag.classList.add('hidden');
+            els.resTkNetAxis.classList.add('hidden');
+            els.deltaTkSpacer.classList.add('hidden');
+            return;
         }
+
+        // Show TK and PK value rows
+        els.tkValuesRow.classList.remove('hidden');
+        els.pkValuesRow.classList.remove('hidden');
+        // Show delta TK grid elements
+        els.deltaTkLabel.classList.remove('hidden');
+        els.resTkNetMag.classList.remove('hidden');
+        els.resTkNetAxis.classList.remove('hidden');
+        els.deltaTkSpacer.classList.remove('hidden');
 
         // --- Display Measured Posterior ---
         // Display raw inputs
@@ -569,12 +598,6 @@
         els.dispPk1Axis.innerText = pAxisFlat.toFixed(0);
         els.dispPk2.innerText = pkSteep.toFixed(2);
         els.dispPk2Axis.innerText = pAxisSteep.toFixed(0);
-
-        // Calculate Delta PK (Magnitude difference)
-        // Posterior astigmatism is the difference between principal meridians
-        const deltaPK = Math.abs(pkSteep - pkFlat);
-        els.resPkMag.innerText = "+" + deltaPK.toFixed(2) + " D";
-        els.resPkAxis.innerText = "@ " + pAxisSteep.toFixed(0) + "°";
 
         // Force negative PK inputs if positive for TK calculation
         const pkFlatVal = -1 * Math.abs(pkFlat);
@@ -620,9 +643,9 @@
 
         // --- D. Reconstruct Total K with LIOU-BRENNAN Scaling ---
         // Scale Net Power to be "SimK-like"
-        const M_tot_scaled = M_tot_gauss * LIOU_BRENNAN_SCALE_FACTOR;
-        const X_tot_scaled = X_tot * LIOU_BRENNAN_SCALE_FACTOR;
-        const Y_tot_scaled = Y_tot * LIOU_BRENNAN_SCALE_FACTOR;
+        const M_tot_scaled = M_tot_gauss * MOD_LIOU_BRENNAN_SCALE_FACTOR;
+        const X_tot_scaled = X_tot * MOD_LIOU_BRENNAN_SCALE_FACTOR;
+        const Y_tot_scaled = Y_tot * MOD_LIOU_BRENNAN_SCALE_FACTOR;
 
         const C_tot_scaled = Math.sqrt(X_tot_scaled*X_tot_scaled + Y_tot_scaled*Y_tot_scaled);
         const daTot = Math.atan2(Y_tot_scaled, X_tot_scaled);
@@ -665,7 +688,58 @@
     // ==========================================
     // INITIALIZATION
     // ==========================================
+    
+    /**
+     * Checks URL for BiomPIN parameter and auto-loads if present
+     * Supports URL format: ?pin=word-word-123456
+     */
+    function checkUrlForBiomPin() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const pin = urlParams.get('pin');
+        
+        if (pin) {
+            // Populate the input field with the PIN from URL
+            els.biomPinInput.value = pin;
+            // Trigger the load function
+            loadBiomPIN();
+        }
+    }
+    
+    /**
+     * Updates the browser URL with BiomPIN for easy sharing
+     * @param {string} pin - The BiomPIN to add to URL
+     */
+    function updateUrlWithPin(pin) {
+        if (!pin) return;
+        
+        const url = new URL(window.location.href);
+        url.searchParams.set('pin', pin);
+        
+        // Update URL without reloading the page
+        window.history.replaceState({}, '', url.toString());
+    }
+    
+    /**
+     * Clears the BiomPIN from the browser URL
+     */
+    function clearUrlPin() {
+        const url = new URL(window.location.href);
+        
+        // Only update if there's a pin parameter
+        if (url.searchParams.has('pin')) {
+            url.searchParams.delete('pin');
+            
+            // If no other params, remove the ? entirely
+            const newUrl = url.searchParams.toString() 
+                ? url.pathname + '?' + url.searchParams.toString()
+                : url.pathname;
+            
+            window.history.replaceState({}, '', newUrl);
+        }
+    }
+    
     calculate();
+    checkUrlForBiomPin();
 
     // ==========================================
     // EXPOSE FUNCTIONS TO GLOBAL SCOPE
