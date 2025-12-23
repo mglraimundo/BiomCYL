@@ -690,6 +690,28 @@
     // ==========================================
     
     /**
+     * Handles paste event on BiomPIN input to strip URLs and keep only the PIN
+     * @param {ClipboardEvent} e - The paste event
+     */
+    function handleBiomPinPaste(e) {
+        const pastedText = e.clipboardData?.getData('text');
+        if (!pastedText) return;
+        
+        // Check if pasted text is a URL containing a BiomPIN
+        const pin = extractBiomPIN(pastedText);
+        if (pin && pastedText !== pin) {
+            // It's a URL or different format, replace with just the PIN
+            e.preventDefault();
+            els.biomPinInput.value = pin;
+        }
+    }
+    
+    // Add paste event listener to BiomPIN input
+    if (els.biomPinInput) {
+        els.biomPinInput.addEventListener('paste', handleBiomPinPaste);
+    }
+    
+    /**
      * Checks URL for BiomPIN parameter and auto-loads if present
      * Supports URL format: ?pin=word-word-123456
      */
