@@ -101,7 +101,16 @@
         loadBiomPinBtn: document.getElementById('loadBiomPinBtn'),
         loadBtnText: document.getElementById('loadBtnText'),
         loadBtnSpinner: document.getElementById('loadBtnSpinner'),
-        biomPinMessage: document.getElementById('biomPinMessage')
+        biomPinMessage: document.getElementById('biomPinMessage'),
+
+        // Print Elements
+        printHeader: document.getElementById('printHeader'),
+        printPatientName: document.getElementById('printPatientName'),
+        printPatientId: document.getElementById('printPatientId'),
+        printSelectedEye: document.getElementById('printSelectedEye'),
+        printEyeContainer: document.getElementById('printEyeContainer'),
+        printDate: document.getElementById('printDate'),
+        printButtonContainer: document.getElementById('printButtonContainer')
     };
 
     // ==========================================
@@ -302,7 +311,7 @@
 
         if (type === 'success') {
             messageEl.classList.add('bg-green-100', 'text-green-700');
-            setTimeout(() => messageEl.classList.add('hidden'), 5000);
+            setTimeout(() => messageEl.classList.add('hidden'), 2500);
         } else if (type === 'error') {
             messageEl.classList.add('bg-red-100', 'text-red-700');
         } else {
@@ -496,6 +505,11 @@
         els.resAkAxis.innerText = "@ --°";
         els.resTkNetMag.innerText = "-- D";
         els.resTkNetAxis.innerText = "@ --°";
+
+        // Hide print button when results are cleared
+        if (els.printButtonContainer) {
+            els.printButtonContainer.classList.add('hidden');
+        }
     }
 
     function resetForm() {
@@ -527,12 +541,20 @@
             if (els.analysisSection) {
                 els.analysisSection.classList.add('hidden');
             }
+            // Hide print button when analysis is hidden
+            if (els.printButtonContainer) {
+                els.printButtonContainer.classList.add('hidden');
+            }
             return;
         }
 
         // Show analysis section when we have valid data
         if (els.analysisSection) {
             els.analysisSection.classList.remove('hidden');
+        }
+        // Show print button when analysis is visible
+        if (els.printButtonContainer) {
+            els.printButtonContainer.classList.remove('hidden');
         }
 
         // --- 1. Measured Anterior (SimK) ---
@@ -804,6 +826,47 @@
     checkUrlForBiomPin();
 
     // ==========================================
+    // PRINT FUNCTIONALITY
+    // ==========================================
+
+    /**
+     * Prepares the print header with current patient data and triggers print
+     */
+    function printReport() {
+        // Populate print header with patient data
+        if (els.printPatientName) {
+            els.printPatientName.textContent = els.patientName.value || '--';
+        }
+        if (els.printPatientId) {
+            els.printPatientId.textContent = els.patientId.value || '--';
+        }
+        if (els.printSelectedEye && els.printEyeContainer) {
+            let eyeText = '--';
+            els.printEyeContainer.classList.remove('eye-right', 'eye-left');
+            if (selectedEye === 'right') {
+                eyeText = 'OD (Right Eye)';
+                els.printEyeContainer.classList.add('eye-right');
+            } else if (selectedEye === 'left') {
+                eyeText = 'OS (Left Eye)';
+                els.printEyeContainer.classList.add('eye-left');
+            }
+            els.printSelectedEye.textContent = eyeText;
+        }
+        if (els.printDate) {
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            els.printDate.textContent = dateStr;
+        }
+
+        // Trigger browser print dialog
+        window.print();
+    }
+
+    // ==========================================
     // EXPOSE FUNCTIONS TO GLOBAL SCOPE
     // (Required for onclick handlers in HTML)
     // ==========================================
@@ -812,5 +875,6 @@
     window.resetAndHidePK = resetAndHidePK;
     window.selectEye = selectEye;
     window.loadBiomPIN = loadBiomPIN;
+    window.printReport = printReport;
 
 })();

@@ -1,7 +1,7 @@
 {
-  "name": "BiomCYL - Corneal Astigmatism Analysis",
+  "name": "BiomCYL - Corneal Astigmatism Analyser",
   "short_name": "BiomCYL",
-  "description": "Corneal Astigmatism Analysis tool for ophthalmology",
+  "description": "Corneal Astigmatism Analyser tool for ophthalmology",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",

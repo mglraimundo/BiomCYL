@@ -6,16 +6,16 @@
     <title>BiomCYL</title>
 
     <!-- Apple Touch Icon for iOS bookmarks -->
-    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=0.3.5">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=0.4.0">
 
     <!-- Standard favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png?v=0.3.5">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png?v=0.4.0">
 
     <!-- Web App Manifest -->
-    <link rel="manifest" href="manifest.json?v=0.3.5">
+    <link rel="manifest" href="manifest.json?v=0.4.0">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css?v=0.3.5">
+    <link rel="stylesheet" href="styles.css?v=0.4.0">
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-800">
 
@@ -32,7 +32,7 @@
                     </svg>
                     <div>
                         <h1 class="text-lg font-bold text-white tracking-tight">BiomCYL</h1>
-                        <p class="text-xs text-blue-100 opacity-90">Corneal Astigmatism Analysis</p>
+                        <p class="text-xs text-blue-100 opacity-90">Corneal Astigmatism Analyser</p>
                     </div>
                 </div>
                 <button onclick="resetForm()" class="p-2 text-blue-100 hover:text-white transition-colors rounded-full hover:bg-blue-700" title="Clear Form">
@@ -46,8 +46,43 @@
         <!-- Main Scrollable Content -->
         <main class="flex-grow overflow-y-auto px-5 py-6 space-y-6">
 
+            <!-- Print Header (hidden on screen, visible in print) -->
+            <div id="printHeader" class="hidden print-only">
+                <div class="print-header-content">
+                    <div class="print-logo">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="print-logo-svg">
+                            <line x1="10" y1="38" x2="38" y2="38" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="10" y1="38" x2="24" y2="12" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M 22 38 A 12 12 0 0 0 14.5 28" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+                        </svg>
+                        <div class="print-title">
+                            <h1>BiomCYL</h1>
+                            <p>Corneal Astigmatism Analyser</p>
+                        </div>
+                    </div>
+                    <div class="print-patient-info">
+                        <div class="print-patient-row">
+                            <span class="print-label">Patient:</span>
+                            <span id="printPatientName" class="print-value">--</span>
+                        </div>
+                        <div class="print-patient-row">
+                            <span class="print-label">ID:</span>
+                            <span id="printPatientId" class="print-value">--</span>
+                        </div>
+                        <div class="print-patient-row">
+                            <span class="print-label">Date:</span>
+                            <span id="printDate" class="print-value">--</span>
+                        </div>
+                    </div>
+                </div>
+                <hr class="print-divider">
+                <div id="printEyeContainer" class="print-eye-display">
+                    <span id="printSelectedEye">--</span>
+                </div>
+            </div>
+
             <!-- BiomPIN Load Section -->
-            <section class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl px-5 py-4 space-y-3">
+            <section class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl px-5 py-4 space-y-3 print-hide">
                 <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-xs font-bold uppercase text-gray-600 tracking-wider">Load from BiomPIN</h2>
@@ -87,7 +122,7 @@
             </section>
 
             <!-- Patient Section -->
-            <section class="space-y-4">
+            <section class="space-y-4 print-hide">
                 <div class="flex items-center justify-between mb-2">
                     <h2 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Patient</h2>
                 </div>
@@ -107,10 +142,10 @@
                 </div>
             </section>
 
-            <hr class="border-gray-100">
+            <hr class="border-gray-100 print-hide">
 
             <!-- Eye Selector Section -->
-            <section class="space-y-4">
+            <section class="space-y-4 print-hide">
                 <div class="flex items-center justify-between mb-2">
                     <h2 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Eye</h2>
                 </div>
@@ -128,10 +163,10 @@
                 </div>
             </section>
 
-            <hr class="border-gray-100">
+            <hr class="border-gray-100 print-hide">
 
             <!-- Inputs Section -->
-            <section class="space-y-4">
+            <section class="space-y-4 print-hide" id="anteriorInputsSection">
                 <div class="flex items-center justify-between mb-2">
                     <div>
                         <h2 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Anterior Keratometry</h2>
@@ -216,7 +251,7 @@
                 </div>
             </section>
 
-            <hr class="border-gray-100">
+            <hr class="border-gray-100 print-hide">
 
             <!-- Results Section -->
             <section id="analysisSection" class="space-y-4 hidden">
@@ -309,14 +344,25 @@
                 </div>
 
             </section>
+
+            <!-- Print Button (only visible when analysis is shown) -->
+            <div id="printButtonContainer" class="hidden text-center pt-2">
+                <button type="button" id="printBtn" onclick="printReport()"
+                    class="inline-flex items-center gap-2 px-6 py-3 bg-gray-600 hover:bg-gray-700 active:bg-gray-800 text-white font-semibold text-sm rounded-lg transition-all shadow-sm hover:shadow">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    Print Report
+                </button>
+            </div>
         </main>
 
         <footer class="px-5 py-4 bg-gray-50 border-t border-gray-100 text-[10px] text-gray-400 text-center">
-            <p class="font-semibold">BiomCYL 0.3.5</p>
+            <p class="font-semibold">BiomCYL 0.4.0</p>
             <p>Developed by Miguel Raimundo</p>
         </footer>
     </div>
 
-    <script src="script.js?v=0.3.5"></script>
+    <script src="script.js?v=0.4.0"></script>
 </body>
 </html>

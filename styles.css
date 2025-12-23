@@ -112,6 +112,84 @@ body {
    Print Styles
    ======================================== */
 
+/* Print Header Styles (visible only in print) */
+.print-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0 0 1rem 0;
+}
+
+.print-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.print-logo-svg {
+    width: 40px;
+    height: 40px;
+}
+
+.print-title h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e40af;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.print-title p {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.print-patient-info {
+    text-align: right;
+}
+
+.print-patient-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.print-label {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.print-value {
+    color: #111827;
+    font-weight: 600;
+    min-width: 100px;
+    text-align: left;
+}
+
+.print-eye-display {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin-top: 0.5rem;
+}
+
+.print-eye-display.eye-right {
+    text-align: left;
+}
+
+.print-eye-display.eye-left {
+    text-align: right;
+}
+
+.print-divider {
+    border: none;
+    border-top: 2px solid #e5e7eb;
+    margin: 1rem 0;
+}
+
 @media print {
     /* Page setup */
     @page {
@@ -132,7 +210,8 @@ body {
     input[type="number"],
     input[type="text"],
     #addMeasuredContainer,
-    #posteriorInputs {
+    #posteriorInputs,
+    #printButtonContainer {
         display: none !important;
     }
 
