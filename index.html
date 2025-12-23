@@ -6,7 +6,7 @@
     <title>BiomCYL</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><line x1='10' y1='38' x2='38' y2='38' stroke='%234A90E2' stroke-width='3' stroke-linecap='round'/><line x1='10' y1='38' x2='24' y2='12' stroke='%234A90E2' stroke-width='3' stroke-linecap='round'/><path d='M 16 38 A 8 8 0 0 1 13.5 31' fill='none' stroke='%234A90E2' stroke-width='2'/><text x='20' y='35' font-size='12' fill='%234A90E2' font-family='Arial'>θ</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css?v=0.1.0">
+    <link rel="stylesheet" href="styles.css?v=0.1.1">
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-800">
 
@@ -39,7 +39,7 @@
         <main class="flex-grow overflow-y-auto px-5 py-6 space-y-6">
 
             <!-- BiomPIN Load Section -->
-            <section class="bg-gradient-to-br from-blue-50 to-indigo-50 border-b border-blue-100 px-5 py-4 space-y-3">
+            <section class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl px-5 py-4 space-y-3">
                 <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-xs font-bold uppercase text-gray-600 tracking-wider">Load from BiomPIN</h2>
@@ -78,40 +78,42 @@
                 <div id="biomPinMessage" role="status" aria-live="polite" class="hidden text-xs px-3 py-2 rounded-lg"></div>
             </section>
 
-            <!-- Patient Information Section -->
+            <!-- Patient Section -->
             <section class="space-y-4">
                 <div class="flex items-center justify-between mb-2">
-                    <h2 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Patient Information</h2>
+                    <h2 class="text-xs font-bold uppercase text-gray-400 tracking-wider">Patient</h2>
                 </div>
 
-                <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-3">
-                    <!-- Patient Name -->
-                    <div class="relative">
-                        <label class="absolute text-[10px] font-semibold text-gray-500 top-2 left-3 uppercase">Patient Name</label>
-                        <input type="text" id="patientName" placeholder="Enter name"
-                            class="w-full pt-6 pb-2 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-base text-gray-900 placeholder-gray-300">
-                    </div>
+                <!-- Patient Name -->
+                <div class="relative">
+                    <label class="absolute text-[10px] font-semibold text-gray-500 top-2 left-3 uppercase">Patient Name</label>
+                    <input type="text" id="patientName" placeholder="Enter name"
+                        class="w-full pt-6 pb-2 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-base text-gray-900 placeholder-gray-300">
+                </div>
 
-                    <!-- Patient ID -->
-                    <div class="relative">
-                        <label class="absolute text-[10px] font-semibold text-gray-500 top-2 left-3 uppercase">Patient ID</label>
-                        <input type="text" id="patientId" placeholder="Enter ID"
-                            class="w-full pt-6 pb-2 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-base text-gray-900 placeholder-gray-300">
-                    </div>
+                <!-- Patient ID -->
+                <div class="relative">
+                    <label class="absolute text-[10px] font-semibold text-gray-500 top-2 left-3 uppercase">Patient ID</label>
+                    <input type="text" id="patientId" placeholder="Enter ID"
+                        class="w-full pt-6 pb-2 px-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-base text-gray-900 placeholder-gray-300">
+                </div>
+            </section>
 
-                    <!-- Eye Selector -->
-                    <div>
-                        <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-2">Eye</label>
-                        <div class="flex gap-2">
-                            <button type="button" id="eyeRight" onclick="selectEye('right')"
-                                class="flex-1 py-2.5 px-4 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-600 font-semibold text-sm transition-all hover:border-blue-400 focus:outline-none">
-                                Right (OD)
-                            </button>
-                            <button type="button" id="eyeLeft" onclick="selectEye('left')"
-                                class="flex-1 py-2.5 px-4 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-600 font-semibold text-sm transition-all hover:border-blue-400 focus:outline-none">
-                                Left (OS)
-                            </button>
-                        </div>
+            <hr class="border-gray-100">
+
+            <!-- Eye Selector Section -->
+            <section class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-2">Eye</label>
+                    <div class="flex gap-2">
+                        <button type="button" id="eyeRight" onclick="selectEye('right')"
+                            class="flex-1 py-2.5 px-4 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-600 font-semibold text-sm transition-all hover:border-blue-400 focus:outline-none">
+                            Right (OD)
+                        </button>
+                        <button type="button" id="eyeLeft" onclick="selectEye('left')"
+                            class="flex-1 py-2.5 px-4 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-600 font-semibold text-sm transition-all hover:border-blue-400 focus:outline-none">
+                            Left (OS)
+                        </button>
                     </div>
                 </div>
             </section>
@@ -287,11 +289,11 @@
         </main>
 
         <footer class="px-5 py-4 bg-gray-50 border-t border-gray-100 text-[10px] text-gray-400 text-center">
-            <p class="font-semibold">BiomCYL 0.1.0</p>
+            <p class="font-semibold">BiomCYL 0.1.1</p>
             <p>Developed by Miguel Raimundo</p>
         </footer>
     </div>
 
-    <script src="script.js?v=0.1.0"></script>
+    <script src="script.js?v=0.1.1"></script>
 </body>
 </html>
