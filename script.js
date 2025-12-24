@@ -33,6 +33,16 @@
     let cachedBiomData = null; // Structure: { patient, right_eye, left_eye, has_pk, pk_data }
     let isLoadingBiomPin = false;
 
+    // Tab state
+    let activeTab = 'biompin'; // 'biompin' or 'fileupload'
+
+    // File upload state
+    let selectedFile = null;
+    let isUploadingFile = false;
+
+    // Current BiomPIN (from either source)
+    let currentBiomPin = null;
+
     // ==========================================
     // DOM ELEMENTS CACHE
     // ==========================================
@@ -103,6 +113,24 @@
         loadBtnText: document.getElementById('loadBtnText'),
         loadBtnSpinner: document.getElementById('loadBtnSpinner'),
         biomPinMessage: document.getElementById('biomPinMessage'),
+
+        // Tab elements
+        tabBiomPin: document.getElementById('tabBiomPin'),
+        tabFileUpload: document.getElementById('tabFileUpload'),
+        panelBiomPin: document.getElementById('panelBiomPin'),
+        panelFileUpload: document.getElementById('panelFileUpload'),
+
+        // File upload elements
+        biometryFileInput: document.getElementById('biometryFileInput'),
+        filePickerText: document.getElementById('filePickerText'),
+        fileNameDisplay: document.getElementById('fileNameDisplay'),
+        uploadFileBtn: document.getElementById('uploadFileBtn'),
+        uploadBtnText: document.getElementById('uploadBtnText'),
+        uploadBtnSpinner: document.getElementById('uploadBtnSpinner'),
+
+        // BiomAPI link elements
+        biomApiLinkContainer: document.getElementById('biomApiLinkContainer'),
+        biomApiLink: document.getElementById('biomApiLink'),
 
         // Print Elements
         printHeader: document.getElementById('printHeader'),
@@ -263,6 +291,214 @@
         }
     }
 
+    // ==========================================
+    // TAB & FILE UPLOAD FUNCTIONS
+    // ==========================================
+
+    /**
+     * Switches between BiomPIN and File Upload tabs
+     * @param {string} tab - 'biompin' or 'fileupload'
+     */
+    function switchTab(tab) {
+        if (isLoadingBiomPin || isUploadingFile) return; // Prevent switching during loading
+
+        activeTab = tab;
+
+        if (tab === 'biompin') {
+            els.panelBiomPin?.classList.remove('hidden');
+            els.panelFileUpload?.classList.add('hidden');
+
+            els.tabBiomPin?.classList.add('bg-blue-600', 'text-white');
+            els.tabBiomPin?.classList.remove('bg-white', 'text-gray-600', 'border-2', 'border-gray-200');
+            els.tabBiomPin?.setAttribute('aria-selected', 'true');
+
+            els.tabFileUpload?.classList.remove('bg-blue-600', 'text-white');
+            els.tabFileUpload?.classList.add('bg-white', 'text-gray-600', 'border-2', 'border-gray-200');
+            els.tabFileUpload?.setAttribute('aria-selected', 'false');
+        } else {
+            els.panelFileUpload?.classList.remove('hidden');
+            els.panelBiomPin?.classList.add('hidden');
+
+            els.tabFileUpload?.classList.add('bg-blue-600', 'text-white');
+            els.tabFileUpload?.classList.remove('bg-white', 'text-gray-600', 'border-2', 'border-gray-200');
+            els.tabFileUpload?.setAttribute('aria-selected', 'true');
+
+            els.tabBiomPin?.classList.remove('bg-blue-600', 'text-white');
+            els.tabBiomPin?.classList.add('bg-white', 'text-gray-600', 'border-2', 'border-gray-200');
+            els.tabBiomPin?.setAttribute('aria-selected', 'false');
+        }
+    }
+
+    /**
+     * Handles file selection and validation
+     * @param {Event} event - File input change event
+     */
+    function handleFileSelection(event) {
+        const file = event.target.files[0];
+
+        if (!file) {
+            selectedFile = null;
+            els.uploadFileBtn.disabled = true;
+            els.filePickerText?.classList.remove('hidden');
+            els.fileNameDisplay?.classList.add('hidden');
+            return;
+        }
+
+        // Validate file type
+        const validExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.bmp'];
+        const fileName = file.name.toLowerCase();
+        const isValid = validExtensions.some(ext => fileName.endsWith(ext));
+
+        if (!isValid) {
+            showBiomPinMessage('Invalid file type. Please upload PDF or image (JPG, PNG, GIF, BMP).', 'error');
+            selectedFile = null;
+            els.uploadFileBtn.disabled = true;
+            return;
+        }
+
+        // Check file size (10MB limit)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            showBiomPinMessage('File too large. Maximum size is 10MB.', 'error');
+            selectedFile = null;
+            els.uploadFileBtn.disabled = true;
+            return;
+        }
+
+        // Valid file selected
+        selectedFile = file;
+        els.filePickerText?.classList.add('hidden');
+        els.fileNameDisplay?.classList.remove('hidden');
+        if (els.fileNameDisplay) els.fileNameDisplay.textContent = file.name;
+        els.uploadFileBtn.disabled = false;
+        els.biomPinMessage?.classList.add('hidden');
+    }
+
+    /**
+     * Toggles loading state for file upload UI
+     * @param {boolean} loading - Whether loading is in progress
+     */
+    function setFileUploadLoadingState(loading) {
+        isUploadingFile = loading;
+
+        if (loading) {
+            if (els.uploadBtnText) els.uploadBtnText.textContent = 'Processing';
+            els.uploadBtnSpinner?.classList.remove('hidden');
+            els.uploadFileBtn.disabled = true;
+            els.biometryFileInput.disabled = true;
+            els.tabBiomPin.disabled = true;
+            els.tabFileUpload.disabled = true;
+        } else {
+            if (els.uploadBtnText) els.uploadBtnText.textContent = 'Process';
+            els.uploadBtnSpinner?.classList.add('hidden');
+            els.uploadFileBtn.disabled = !selectedFile;
+            els.biometryFileInput.disabled = false;
+            els.tabBiomPin.disabled = false;
+            els.tabFileUpload.disabled = false;
+        }
+    }
+
+    /**
+     * Uploads biometry file to BiomAPI and processes response
+     */
+    async function uploadBiometryFile() {
+        if (!selectedFile || isUploadingFile) return;
+
+        setFileUploadLoadingState(true);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('biompin', 'true'); // Request BiomPIN generation
+
+            const response = await fetch('https://biomapi.com/api/v1/biom/process', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const apiResponse = await response.json();
+
+            // Validate response structure
+            if (!apiResponse.success) {
+                throw new Error(apiResponse.message || 'API returned success: false');
+            }
+
+            if (!apiResponse.data || !apiResponse.data.patient || !apiResponse.data.right_eye || !apiResponse.data.left_eye) {
+                throw new Error('Invalid response structure: missing required data fields');
+            }
+
+            // Process the response (populate form)
+            processBiomDataResponse(apiResponse, { displayPin: true, source: 'upload' });
+
+            // Store biomPin for after loading state is cleared
+            const biomPin = apiResponse.metadata?.biompin?.pin;
+
+            // Clear loading state before switching tabs (switchTab checks isUploadingFile)
+            setFileUploadLoadingState(false);
+
+            // Switch to BiomPIN tab and populate with generated pin
+            if (biomPin) {
+                currentBiomPin = biomPin;
+                switchTab('biompin');
+                if (els.biomPinInput) els.biomPinInput.value = biomPin;
+                updateBiomApiLink(biomPin);
+                updateUrlWithPin(biomPin);
+            }
+
+        } catch (error) {
+            console.error('File upload error:', error);
+            handleFileUploadError(error);
+            setFileUploadLoadingState(false);
+        }
+    }
+
+    /**
+     * Handles file upload errors with user-friendly messages
+     * @param {Error} error - The error object
+     */
+    function handleFileUploadError(error) {
+        let message = 'Upload failed. Please try again.';
+
+        if (error.message) {
+            if (error.message.includes('HTTP 400')) {
+                message = 'Invalid file format or corrupted file.';
+            } else if (error.message.includes('HTTP 413')) {
+                message = 'File too large. Please try a smaller file.';
+            } else if (error.message.includes('HTTP 429')) {
+                message = 'Rate limit exceeded. Please wait before uploading again.';
+            } else if (error.message.includes('HTTP 422')) {
+                message = 'Validation error. Please check your file format.';
+            } else if (!error.message.includes('HTTP')) {
+                message = error.message;
+            }
+        }
+
+        showBiomPinMessage(message, 'error');
+    }
+
+    /**
+     * Updates and displays the BiomAPI link
+     * @param {string} pin - The BiomPIN
+     */
+    function updateBiomApiLink(pin) {
+        if (!pin || !els.biomApiLink || !els.biomApiLinkContainer) return;
+
+        currentBiomPin = pin;
+        els.biomApiLink.href = `https://biomapi.com/pin/${pin}`;
+        els.biomApiLinkContainer.classList.remove('hidden');
+    }
+
+    // ==========================================
+    // BIOMPIN FUNCTIONS
+    // ==========================================
+
     /**
      * Extracts BiomPIN from user input (handles raw PIN or full URLs)
      * @param {string} input - Raw user input
@@ -415,10 +651,12 @@
                 throw new Error('Invalid response structure from API');
             }
 
-            processBiomData(data);
+            processBiomDataResponse(data, { source: 'biompin' });
             showBiomPinMessage(`Loaded data for ${data.data.patient.name || 'patient'}`, 'success');
-            
-            // Update URL with BiomPIN for easy sharing
+
+            // Update BiomAPI link and URL
+            currentBiomPin = pin;
+            updateBiomApiLink(pin);
             updateUrlWithPin(pin);
 
         } catch (error) {
@@ -430,11 +668,21 @@
     }
 
     /**
-     * Processes API response and populates form
-     * @param {Object} apiResponse - Full API response
+     * Processes biometry data from BiomAPI (unified handler for both BiomPIN and file upload)
+     * @param {Object} apiResponse - API response object
+     * @param {Object} options - Processing options
+     * @param {boolean} options.displayPin - Whether to display the BiomPIN (for file upload)
+     * @param {string} options.source - Source of data: 'biompin' or 'upload'
      */
-    function processBiomData(apiResponse) {
+    function processBiomDataResponse(apiResponse, options = {}) {
+        const { displayPin = false, source = 'biompin' } = options;
         const { data, extra_data } = apiResponse;
+
+        // Extract BiomPIN if present (from BiomPIN load, update link)
+        if (apiResponse.biom_pin && source === 'biompin') {
+            currentBiomPin = apiResponse.biom_pin;
+            updateBiomApiLink(apiResponse.biom_pin);
+        }
 
         clearFormData();
 
@@ -519,11 +767,20 @@
         if (els.biomPinInput) els.biomPinInput.value = '';
         if (els.biomPinMessage) els.biomPinMessage.classList.add('hidden');
 
+        // Clear file upload state
+        selectedFile = null;
+        currentBiomPin = null;
+        if (els.biometryFileInput) els.biometryFileInput.value = '';
+        els.biomApiLinkContainer?.classList.add('hidden');
+        els.filePickerText?.classList.remove('hidden');
+        els.fileNameDisplay?.classList.add('hidden');
+        if (els.uploadFileBtn) els.uploadFileBtn.disabled = true;
+
         // Clear form data
         clearFormData();
         resetAndHidePK();
         updateBadge(NaN);
-        
+
         // Clear URL parameter
         clearUrlPin();
     }
@@ -779,7 +1036,23 @@
     if (els.biomPinInput) {
         els.biomPinInput.addEventListener('paste', handleBiomPinPaste);
     }
-    
+
+    // Add tab switching event listeners
+    if (els.tabBiomPin) {
+        els.tabBiomPin.addEventListener('click', () => switchTab('biompin'));
+    }
+    if (els.tabFileUpload) {
+        els.tabFileUpload.addEventListener('click', () => switchTab('fileupload'));
+    }
+
+    // Add file upload event listeners
+    if (els.biometryFileInput) {
+        els.biometryFileInput.addEventListener('change', handleFileSelection);
+    }
+    if (els.uploadFileBtn) {
+        els.uploadFileBtn.addEventListener('click', uploadBiometryFile);
+    }
+
     /**
      * Checks URL for BiomPIN parameter and auto-loads if present
      * Supports URL format: ?pin=word-word-123456
@@ -883,5 +1156,7 @@
     window.selectEye = selectEye;
     window.loadBiomPIN = loadBiomPIN;
     window.printReport = printReport;
+    window.switchTab = switchTab;
+    window.uploadBiometryFile = uploadBiometryFile;
 
 })();
