@@ -127,6 +127,7 @@
         uploadFileBtn: document.getElementById('uploadFileBtn'),
         uploadBtnText: document.getElementById('uploadBtnText'),
         uploadBtnSpinner: document.getElementById('uploadBtnSpinner'),
+        uploadBtnIcon: document.getElementById('uploadBtnIcon'),
 
         // BiomAPI link elements
         biomApiLinkContainer: document.getElementById('biomApiLinkContainer'),
@@ -382,15 +383,17 @@
         isUploadingFile = loading;
 
         if (loading) {
-            if (els.uploadBtnText) els.uploadBtnText.textContent = 'Processing';
+            if (els.uploadBtnText) els.uploadBtnText.textContent = 'Processing...';
             els.uploadBtnSpinner?.classList.remove('hidden');
+            els.uploadBtnIcon?.classList.add('hidden');
             els.uploadFileBtn.disabled = true;
             els.biometryFileInput.disabled = true;
             els.tabBiomPin.disabled = true;
             els.tabFileUpload.disabled = true;
         } else {
-            if (els.uploadBtnText) els.uploadBtnText.textContent = 'Process';
+            if (els.uploadBtnText) els.uploadBtnText.textContent = 'Process Biometry';
             els.uploadBtnSpinner?.classList.add('hidden');
+            els.uploadBtnIcon?.classList.remove('hidden');
             els.uploadFileBtn.disabled = !selectedFile;
             els.biometryFileInput.disabled = false;
             els.tabBiomPin.disabled = false;
@@ -1062,6 +1065,8 @@
         const pin = urlParams.get('pin');
         
         if (pin) {
+            // Switch to BiomPIN tab since it's no longer the default
+            switchTab('biompin');
             // Populate the input field with the PIN from URL
             els.biomPinInput.value = pin;
             // Trigger the load function
