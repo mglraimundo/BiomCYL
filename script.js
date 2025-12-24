@@ -89,6 +89,7 @@
         addMeasuredContainer: document.getElementById('addMeasuredContainer'),
         axisTypeBadge: document.getElementById('axisTypeBadge'),
         analysisSection: document.getElementById('analysisSection'),
+        analysisHr: document.getElementById('analysisHr'),
 
         // Patient Data Elements
         patientName: document.getElementById('patientName'),
@@ -541,6 +542,9 @@
             if (els.analysisSection) {
                 els.analysisSection.classList.add('hidden');
             }
+            if (els.analysisHr) {
+                els.analysisHr.classList.add('hidden');
+            }
             // Hide print button when analysis is hidden
             if (els.printButtonContainer) {
                 els.printButtonContainer.classList.add('hidden');
@@ -551,6 +555,9 @@
         // Show analysis section when we have valid data
         if (els.analysisSection) {
             els.analysisSection.classList.remove('hidden');
+        }
+        if (els.analysisHr) {
+            els.analysisHr.classList.remove('hidden');
         }
         // Show print button when analysis is visible
         if (els.printButtonContainer) {
