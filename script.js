@@ -122,12 +122,11 @@
 
         // File upload elements
         biometryFileInput: document.getElementById('biometryFileInput'),
+        filePickerLabel: document.getElementById('filePickerLabel'),
+        filePickerBox: document.getElementById('filePickerBox'),
+        filePickerSpinner: document.getElementById('filePickerSpinner'),
         filePickerText: document.getElementById('filePickerText'),
         fileNameDisplay: document.getElementById('fileNameDisplay'),
-        uploadFileBtn: document.getElementById('uploadFileBtn'),
-        uploadBtnText: document.getElementById('uploadBtnText'),
-        uploadBtnSpinner: document.getElementById('uploadBtnSpinner'),
-        uploadBtnIcon: document.getElementById('uploadBtnIcon'),
 
         // BiomAPI link elements
         biomApiLinkContainer: document.getElementById('biomApiLinkContainer'),
@@ -339,7 +338,6 @@
 
         if (!file) {
             selectedFile = null;
-            els.uploadFileBtn.disabled = true;
             els.filePickerText?.classList.remove('hidden');
             els.fileNameDisplay?.classList.add('hidden');
             return;
@@ -353,7 +351,6 @@
         if (!isValid) {
             showBiomPinMessage('Invalid file type. Please upload PDF or image (JPG, PNG, GIF, BMP).', 'error');
             selectedFile = null;
-            els.uploadFileBtn.disabled = true;
             return;
         }
 
@@ -362,17 +359,13 @@
         if (file.size > maxSize) {
             showBiomPinMessage('File too large. Maximum size is 10MB.', 'error');
             selectedFile = null;
-            els.uploadFileBtn.disabled = true;
             return;
         }
 
-        // Valid file selected
+        // Valid file selected - auto-trigger processing
         selectedFile = file;
-        els.filePickerText?.classList.add('hidden');
-        els.fileNameDisplay?.classList.remove('hidden');
-        if (els.fileNameDisplay) els.fileNameDisplay.textContent = file.name;
-        els.uploadFileBtn.disabled = false;
         els.biomPinMessage?.classList.add('hidden');
+        uploadBiometryFile();
     }
 
     /**
@@ -383,21 +376,32 @@
         isUploadingFile = loading;
 
         if (loading) {
-            if (els.uploadBtnText) els.uploadBtnText.textContent = 'Processing...';
-            els.uploadBtnSpinner?.classList.remove('hidden');
-            els.uploadBtnIcon?.classList.add('hidden');
-            els.uploadFileBtn.disabled = true;
+            // Show spinner, hide text
+            els.filePickerSpinner?.classList.remove('hidden');
+            els.filePickerText?.classList.add('hidden');
+            els.fileNameDisplay?.classList.add('hidden');
+            // Grey out and disable file picker
+            els.filePickerBox?.classList.add('opacity-50', 'pointer-events-none');
+            els.filePickerLabel?.classList.remove('cursor-pointer');
+            els.filePickerLabel?.classList.add('cursor-not-allowed');
             els.biometryFileInput.disabled = true;
             els.tabBiomPin.disabled = true;
             els.tabFileUpload.disabled = true;
         } else {
-            if (els.uploadBtnText) els.uploadBtnText.textContent = 'Process Biometry';
-            els.uploadBtnSpinner?.classList.add('hidden');
-            els.uploadBtnIcon?.classList.remove('hidden');
-            els.uploadFileBtn.disabled = !selectedFile;
+            // Hide spinner, show default text
+            els.filePickerSpinner?.classList.add('hidden');
+            els.filePickerText?.classList.remove('hidden');
+            els.fileNameDisplay?.classList.add('hidden');
+            // Restore file picker styling
+            els.filePickerBox?.classList.remove('opacity-50', 'pointer-events-none');
+            els.filePickerLabel?.classList.add('cursor-pointer');
+            els.filePickerLabel?.classList.remove('cursor-not-allowed');
             els.biometryFileInput.disabled = false;
             els.tabBiomPin.disabled = false;
             els.tabFileUpload.disabled = false;
+            // Clear the selected file and reset input
+            selectedFile = null;
+            els.biometryFileInput.value = '';
         }
     }
 
@@ -655,7 +659,6 @@
             }
 
             processBiomDataResponse(data, { source: 'biompin' });
-            showBiomPinMessage(`Loaded data for ${data.data.patient.name || 'patient'}`, 'success');
 
             // Update BiomAPI link and URL
             currentBiomPin = pin;
@@ -777,7 +780,6 @@
         els.biomApiLinkContainer?.classList.add('hidden');
         els.filePickerText?.classList.remove('hidden');
         els.fileNameDisplay?.classList.add('hidden');
-        if (els.uploadFileBtn) els.uploadFileBtn.disabled = true;
 
         // Clear form data
         clearFormData();
@@ -1048,12 +1050,9 @@
         els.tabFileUpload.addEventListener('click', () => switchTab('fileupload'));
     }
 
-    // Add file upload event listeners
+    // Add file upload event listener
     if (els.biometryFileInput) {
         els.biometryFileInput.addEventListener('change', handleFileSelection);
-    }
-    if (els.uploadFileBtn) {
-        els.uploadFileBtn.addEventListener('click', uploadBiometryFile);
     }
 
     /**
