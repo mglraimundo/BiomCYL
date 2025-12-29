@@ -103,20 +103,20 @@ export function populateEyeData(eye) {
 
     // Populate anterior keratometry only if keratometric index matches 1.3375
     if (eyeData.keratometric_index === IDX_SIMK) {
-        els.kFlat.value = eyeData.K1_magnitude || '';
-        els.axisFlat.value = eyeData.K1_axis || '';
-        els.kSteep.value = eyeData.K2_magnitude || '';
-        els.axisSteep.value = eyeData.K2_axis || '';
+        els.kFlat.value = eyeData.K1_magnitude ?? '';
+        els.axisFlat.value = eyeData.K1_axis ?? '';
+        els.kSteep.value = eyeData.K2_magnitude ?? '';
+        els.axisSteep.value = eyeData.K2_axis ?? '';
     }
 
     // Populate posterior keratometry if available
     if (state.cachedBiomData.has_pk && state.cachedBiomData.pk_data) {
         const pkData = state.cachedBiomData.pk_data[eyeKey];
         if (pkData) {
-            els.pkFlat.value = pkData.PK1_magnitude || '';
-            els.pAxisFlat.value = pkData.PK1_axis || '';
-            els.pkSteep.value = pkData.PK2_magnitude || '';
-            els.pAxisSteep.value = pkData.PK2_axis || '';
+            els.pkFlat.value = pkData.PK1_magnitude ?? '';
+            els.pAxisFlat.value = pkData.PK1_axis ?? '';
+            els.pkSteep.value = pkData.PK2_magnitude ?? '';
+            els.pAxisSteep.value = pkData.PK2_axis ?? '';
         }
     }
 
@@ -183,7 +183,6 @@ export async function loadBiomPIN() {
     }
 
     setLoadingState(true);
-    showBiomPinMessage('Loading biometry data...', 'info');
 
     try {
         const apiUrl = `https://biomapi.com/api/v1/biom/retrieve?biom_pin=${encodeURIComponent(pin)}`;
