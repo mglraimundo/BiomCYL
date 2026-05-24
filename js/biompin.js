@@ -138,7 +138,7 @@ export function updateBiomApiLink(pin, patient = null) {
 
     state.currentBiomPin = pin;
     
-    const relativeUrl = historyStore.buildBiomPINUrl(pin, patient ? {
+    const relativeUrl = window.BiomPinSDK.context.buildUrl(pin, patient ? {
         patientName: patient.name,
         patientId: patient.id
     } : null);
@@ -219,11 +219,11 @@ export async function loadBiomPIN(options = {}) {
         }
 
         // Decode context from pendingContext (if pasted) or window.location
-        const identityContext = pendingBiompinIdentityContext || historyStore.decodeIdentityContextFromLocation(window.location);
+        const identityContext = pendingBiompinIdentityContext || window.BiomPinSDK.context.decodeFromLocation(window.location);
         pendingBiompinIdentityContext = null;
 
         // Merge redacted patient identifiers
-        data = historyStore.mergeLocalIdentifiers(pin, data, identityContext);
+        data = window.BiomPinSDK.context.merge(pin, data, identityContext, historyStore.list());
 
         processBiomDataResponse(data, { source: 'biompin' });
 
@@ -477,7 +477,7 @@ export function handleBiomPinPaste(e) {
         // Try to parse the URL and extract the biomctx fragment
         try {
             const parsedUrl = new URL(pastedText, window.location.origin);
-            pendingBiompinIdentityContext = historyStore.decodeIdentityContextFromLocation(parsedUrl);
+            pendingBiompinIdentityContext = window.BiomPinSDK.context.decodeFromLocation(parsedUrl);
         } catch {
             pendingBiompinIdentityContext = null;
         }
@@ -494,7 +494,7 @@ export function handleBiomPinPaste(e) {
 
 const HISTORY_PREVIEW = 5;
 
-const historyStore = window.BiomPinHistory.create();
+const historyStore = window.BiomPinSDK.history.create();
 let _historyEntries = [];
 let _historyExpanded = false;
 

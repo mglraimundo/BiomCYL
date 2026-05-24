@@ -12,16 +12,16 @@
     <meta name="theme-color" content="#2563EB">
 
     <!-- Apple Touch Icon for iOS bookmarks -->
-    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=1.5.1">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=1.6.0">
 
     <!-- Standard favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png?v=1.5.1">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png?v=1.6.0">
 
     <!-- Web App Manifest -->
-    <link rel="manifest" href="manifest.json?v=1.5.1">
+    <link rel="manifest" href="manifest.json?v=1.6.0">
 
-    <link rel="stylesheet" href="css/tailwind.css?v=1.5.1">
-    <link rel="stylesheet" href="styles.css?v=1.5.1">
+    <link rel="stylesheet" href="css/tailwind.css?v=1.6.0">
+    <link rel="stylesheet" href="styles.css?v=1.6.0">
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-800">
 
@@ -486,7 +486,7 @@
             <p class="font-semibold flex items-center justify-center gap-1.5">
                 CYL
                 <span class="text-gray-300">·</span>
-                1.5.1
+                1.6.0
                 <span class="text-gray-300">·</span>
                 <a href="#" id="jsonViewToggle" onclick="toggleJsonView(); return false;" class="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer" aria-label="Toggle JSON view">{ } JSON</a>
                 <span class="text-gray-300">·</span>
@@ -553,11 +553,11 @@
       // To configure a custom BiomAPI server base URL (e.g., for local testing), uncomment below:
       // window.CYL_CONFIG = { biomApiBaseUrl: 'http://localhost:8000' };
     </script>
-    <script src="js/biompin-history.js?v=1.5.1"></script>
-    <script type="module" src="js/main.js?v=1.5.1"></script>
+    <script src="js/biompin-sdk.js?v=1.6.0"></script>
+    <script type="module" src="js/main.js?v=1.6.0"></script>
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js?v=1.5.1', { updateViaCache: 'none' });
+        navigator.serviceWorker.register('/sw.js?v=1.6.0', { updateViaCache: 'none' });
       }
     </script>
 </body>
