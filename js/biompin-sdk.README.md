@@ -12,10 +12,10 @@ You can include the SDK directly from any running BiomAPI instance:
 <script src="https://biomapi.com/static/js/biompin-sdk.js"></script>
 
 <!-- Or version-locked path for production caching -->
-<script src="https://biomapi.com/static/v2.0.10/js/biompin-sdk.js"></script>
+<script src="https://biomapi.com/static/v2.0.11/js/biompin-sdk.js"></script>
 ```
 
-### 2. Modern ES Modules
+### 2. Browser Module Side-Effect Import
 ```javascript
 import './biompin-sdk.js';
 
@@ -38,6 +38,8 @@ const store = window.BiomPinSDK.history.create({
 });
 ```
 
+If browser storage is unavailable or blocked, the history store falls back to no-op storage. BiomPIN processing and retrieval continue to work, but history remains empty.
+
 ### Entry Schema
 
 History entries have the following flat structure:
@@ -57,11 +59,11 @@ History entries have the following flat structure:
 
 ### Methods
 
-- **`add({ dbId, pin, patientName, patientId, expiresAt })`**: Formats and stores an entry, pruning stale entries from older databases, deduping existing entries by PIN, and enforcing the capacity limit.
-- **`list()`**: Returns all non-expired cached entries, newest first.
+- **`add({ dbId, pin, patientName, patientId, expiresAt })`**: Formats and stores an entry, deduping existing entries by PIN and enforcing the capacity limit.
+- **`list()`**: Returns stored entries, newest first.
 - **`search(query)`**: Case-insensitive search on patient name, patient ID, or PIN.
 - **`pruneExpired()`**: Removes expired entries and returns kept entries.
-- **`pruneDbIdMismatch(currentDbId)`**: Removes entries where the stored database ID differs from `currentDbId` (e.g. after database resets).
+- **`pruneDbIdMismatch(currentDbId)`**: Removes entries where the stored database ID differs from `currentDbId`, including older entries with no `db_id`.
 - **`clearOne(pin)`**: Deletes a single history entry by PIN.
 - **`clearAll()`**: Purges the entire history cache.
 
@@ -77,5 +79,5 @@ The context module manages stateless private patient identity context handoffs v
 - **`decodeFromLocation(location)`**: Extracts and decodes the `#biomctx=...` fragment from a browser `location` or `URL` object. Returns `{ patientName, patientId }` or `null`.
 - **`fromResponse(apiResponse)`**: Parses identity context from a standard BiomAPI JSON response.
 - **`buildUrl(pin, identityContext)`**: Builds a relative BiomPIN path `/pin/...` including the `#biomctx` fragment.
-- **`buildCalculatorUrl(baseUrl, pin, identityContext)`**: Builds an absolute target URL for an external calculator with a `?biompin=...` query parameter and `#biomctx` fragment.
-- **`merge(pin, response, identityContext, historyEntries)`**: Merges redacted patient name and ID back into a decrypted/retrieved API response. It looks in `identityContext` first, falling back to local history entries matching the PIN.
+- **`buildCalculatorUrl(baseUrl, pin, identityContext)`**: Builds an absolute target URL for an external calculator with a `?biompin=...` query parameter and `#biomctx` fragment. Pass a base URL without an existing hash fragment.
+- **`merge(pin, response, identityContext, historyEntries)`**: Mutates the supplied API response by merging redacted patient name and ID back into it. It looks in `identityContext` first, falling back to local history entries matching the PIN.

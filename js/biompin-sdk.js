@@ -3,7 +3,7 @@
  * Core browser-side library for managing BiomPIN access history and patient identity context.
  * 
  * Supports standard browser script tags (exposing window.BiomPinSDK),
- * CommonJS (module.exports), and ES6 Module imports.
+ * CommonJS (module.exports), and browser module side-effect imports.
  */
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) {
@@ -21,11 +21,40 @@
         return value == null ? '' : String(value).trim();
     }
 
+    const noopStorage = {
+        getItem() {
+            return null;
+        },
+        setItem() {},
+        removeItem() {}
+    };
+
+    function getSafeStorage(storage) {
+        const candidate = storage || (typeof localStorage !== 'undefined' ? localStorage : null);
+        if (!candidate || typeof candidate.getItem !== 'function' || typeof candidate.setItem !== 'function') {
+            return noopStorage;
+        }
+
+        try {
+            const testKey = '__biompin_sdk_storage_test__';
+            candidate.setItem(testKey, '1');
+            if (typeof candidate.removeItem === 'function') {
+                candidate.removeItem(testKey);
+            }
+            return candidate;
+        } catch {
+            return noopStorage;
+        }
+    }
+
     function cloneEntry(entry) {
         if (!entry) return null;
+        const pin = normalizeString(entry.pin || entry.biompin);
+        if (!pin) return null;
+
         return {
-            pin: entry.pin || entry.biompin,
-            biompin: entry.biompin || entry.pin,
+            pin,
+            biompin: normalizeString(entry.biompin || entry.pin),
             patient_name: entry.patient_name,
             patient_id: entry.patient_id,
             expires_at: entry.expires_at,
@@ -58,22 +87,19 @@
      * History Manager (Stateful localStorage client)
      */
     function createHistoryStore(options = {}) {
-        const storage = options.storage || (typeof localStorage !== 'undefined' ? localStorage : null);
+        const storage = getSafeStorage(options.storage);
         const storageKey = options.storageKey || 'biompin_history';
         const maxEntries = Number.isFinite(options.maxEntries) && options.maxEntries > 0
             ? Math.floor(options.maxEntries)
             : 250;
 
-        if (!storage || typeof storage.getItem !== 'function' || typeof storage.setItem !== 'function') {
-            throw new Error('BiomPinSDK.history requires a localStorage-compatible storage object.');
-        }
-
         function readEntries() {
-            const raw = storage.getItem(storageKey);
-            if (!raw) return [];
             try {
+                const raw = storage.getItem(storageKey);
+                if (!raw) return [];
+
                 const parsed = JSON.parse(raw);
-                return Array.isArray(parsed) ? parsed.filter(Boolean).map(cloneEntry) : [];
+                return Array.isArray(parsed) ? parsed.map(cloneEntry).filter(Boolean) : [];
             } catch {
                 return [];
             }
@@ -81,7 +107,7 @@
 
         function writeEntries(entries) {
             try {
-                storage.setItem(storageKey, JSON.stringify(entries.map(cloneEntry)));
+                storage.setItem(storageKey, JSON.stringify(entries.map(cloneEntry).filter(Boolean)));
             } catch (e) {
                 // Ignore DOMException storage quota exceeded errors gracefully
             }
@@ -132,10 +158,10 @@
                 accessed_at: new Date().toISOString()
             };
 
-            // Prune entries from older database instances (if dbId matches the added entry's database ID)
-            // Deduplicate the current entry by PIN
+            // Keep history scoped to the active database when the caller supplies a dbId,
+            // and deduplicate the current entry by PIN.
             const filtered = existingHistory
-                .filter(item => !entry.db_id || !item.db_id || item.db_id === entry.db_id)
+                .filter(item => !entry.db_id || normalizeString(item.db_id) === entry.db_id)
                 .filter(item => item.pin !== resolvedPin);
 
             filtered.unshift(entry);
@@ -154,8 +180,8 @@
         function hasDbIdMismatch(entryOrBiomPin, currentDbId) {
             const entry = resolveEntry(entryOrBiomPin);
             const targetDbId = normalizeString(currentDbId);
-            if (!entry || !entry.db_id || !targetDbId) return false;
-            return entry.db_id !== targetDbId;
+            if (!entry || !targetDbId) return false;
+            return normalizeString(entry.db_id) !== targetDbId;
         }
 
         function pruneExpired() {
