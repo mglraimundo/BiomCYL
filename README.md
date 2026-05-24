@@ -42,7 +42,7 @@ This README is the entry point for both. If you're here for the clinical tool, j
 
 [**cyl.mraimundo.com**](https://cyl.mraimundo.com) — installs as a PWA on iOS and Android.
 
-Share a pre-loaded PIN by appending `?pin=word-word-123456` to the URL. Share the JSON view of a PIN by appending `&view=json`.
+Share a pre-loaded PIN by appending `?biompin=word-word-123456` to the URL. Share the JSON view of a PIN by appending `&view=json`.
 
 ---
 
@@ -209,7 +209,7 @@ Append `?view=json` to any CYL URL (or click `{ } JSON` in the footer) to hide t
 
 Useful when:
 - You're implementing BiomAPI against your own biometers and want a quick reference of what the API returns for each device.
-- You want to share a specific biometry's JSON with a colleague — send `https://cyl.mraimundo.com/?pin=<PIN>&view=json`.
+- You want to share a specific biometry's JSON with a colleague — send `https://cyl.mraimundo.com/?biompin=<PIN>&view=json`.
 - You're debugging a printout that parsed unexpectedly.
 
 A copy-to-clipboard button in the JSON pane copies the prettified payload verbatim.
@@ -248,7 +248,7 @@ Storage, expiry, lazy db-id mismatch pruning, and clearing are handled by [`js/b
 
 CYL is a static client-side app. There is no backend, no analytics, no telemetry.
 
-- The **only** outbound network traffic is to `biomapi.com` (PIN retrieve, file upload, status) and `web3forms.com` (contact form).
+- The **only** outbound network traffic is to `biomapi-next.onrender.com` (PIN retrieve, file upload, status) and `web3forms.com` (contact form).
 - Patient data pasted into the calculator never leaves the browser unless the user explicitly uploads a file to BiomAPI.
 - Local history is stored in the browser's `localStorage` and is scoped to a single device / browser profile.
 - There are no cookies, no tracking pixels, no session tokens.

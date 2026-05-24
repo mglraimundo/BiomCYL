@@ -6,6 +6,9 @@
 import { els, state, toggleMeasured, resetAndHidePK, selectEye, switchTab, setFileUploadLoadingState, renderJsonView } from './ui.js';
 import { calculate, clearResults, updateBadge, IDX_SIMK } from './calculations.js';
 
+// Central BiomAPI server base URL config
+const BIOMAPI_BASE_URL = window.CYL_CONFIG?.biomApiBaseUrl || 'https://biomapi-next.onrender.com';
+
 // ==========================================
 // BIOMPIN FUNCTIONS
 // ==========================================
@@ -126,12 +129,19 @@ export function populateEyeData(eye) {
 /**
  * Updates and displays the BiomAPI link
  * @param {string} pin - The BiomPIN
+ * @param {Object|null} patient - The patient data
  */
-export function updateBiomApiLink(pin) {
+export function updateBiomApiLink(pin, patient = null) {
     if (!pin || !els.biomApiLink || !els.biomApiLinkContainer) return;
 
     state.currentBiomPin = pin;
-    els.biomApiLink.href = `https://biomapi.com/pin/${pin}`;
+    
+    const relativeUrl = historyStore.buildBiomPINUrl(pin, patient ? {
+        patientName: patient.name,
+        patientId: patient.id
+    } : null);
+
+    els.biomApiLink.href = `${BIOMAPI_BASE_URL}${relativeUrl}`;
     els.biomApiLinkContainer.classList.remove('hidden');
 }
 
@@ -143,7 +153,7 @@ export function updateUrlWithPin(pin) {
     if (!pin) return;
 
     const url = new URL(window.location.href);
-    url.searchParams.set('pin', pin);
+    url.searchParams.set('biompin', pin);
 
     // Update URL without reloading the page
     window.history.replaceState({}, '', url.toString());
@@ -155,9 +165,9 @@ export function updateUrlWithPin(pin) {
 export function clearUrlPin() {
     const url = new URL(window.location.href);
 
-    // Only update if there's a pin parameter
-    if (url.searchParams.has('pin')) {
-        url.searchParams.delete('pin');
+    // Only update if there's a biompin parameter
+    if (url.searchParams.has('biompin')) {
+        url.searchParams.delete('biompin');
 
         // If no other params, remove the ? entirely
         const newUrl = url.searchParams.toString()
@@ -189,7 +199,7 @@ export async function loadBiomPIN(options = {}) {
     setLoadingState(true);
 
     try {
-        const apiUrl = `https://biomapi.com/api/v1/biom/retrieve?biom_pin=${encodeURIComponent(pin)}`;
+        const apiUrl = `${BIOMAPI_BASE_URL}/api/v1/biom/retrieve?biom_pin=${encodeURIComponent(pin)}`;
 
         const response = await fetch(apiUrl, {
             method: 'GET',
@@ -200,18 +210,34 @@ export async function loadBiomPIN(options = {}) {
             throw new Error(`API request failed with status ${response.status}`);
         }
 
-        const data = await response.json();
+        let data = await response.json();
 
         if (!data.data?.patient || !data.data?.right_eye || !data.data?.left_eye) {
             throw new Error('Invalid response structure from API');
         }
 
+        // Decode context from window.location
+        const identityContext = historyStore.decodeIdentityContextFromLocation(window.location);
+
+        // Merge redacted patient identifiers
+        data = historyStore.mergeLocalIdentifiers(pin, data, identityContext);
+
         processBiomDataResponse(data, { source: 'biompin' });
 
         // Update BiomAPI link and URL
         state.currentBiomPin = pin;
-        updateBiomApiLink(pin);
+        updateBiomApiLink(pin, data.data.patient);
         updateUrlWithPin(pin);
+
+        // Clear the URL hash if identityContext was successfully parsed (avoid lingering raw hash)
+        if (identityContext) {
+            window.history.replaceState(
+                {},
+                '',
+                window.location.pathname + window.location.search
+            );
+        }
+
         addToHistory(pin, data.data.patient, data.biompin?.expires_at, data.biompin?.db_id);
 
     } catch (error) {
@@ -331,7 +357,7 @@ export async function uploadBiometryFile() {
         formData.append('file', state.selectedFile);
         formData.append('biompin', 'true'); // Request BiomPIN generation
 
-        const response = await fetch('https://biomapi.com/api/v1/biom/process', {
+        const response = await fetch(`${BIOMAPI_BASE_URL}/api/v1/biom/process`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json'
@@ -364,7 +390,7 @@ export async function uploadBiometryFile() {
             state.currentBiomPin = biomPin;
             switchTab('biompin');
             if (els.biomPinInput) els.biomPinInput.value = biomPin;
-            updateBiomApiLink(biomPin);
+            updateBiomApiLink(biomPin, apiResponse.data.patient);
             updateUrlWithPin(biomPin);
             addToHistory(biomPin, apiResponse.data.patient, apiResponse.biompin?.expires_at, apiResponse.biompin?.db_id);
         }
@@ -466,7 +492,7 @@ export function initHistory() {
 
 async function pruneHistoryAfterFailedLoad() {
     try {
-        const res = await fetch('https://biomapi.com/api/v1/status', { headers: { 'Accept': 'application/json' } });
+        const res = await fetch(`${BIOMAPI_BASE_URL}/api/v1/status`, { headers: { 'Accept': 'application/json' } });
         if (res.ok) {
             const { db_id } = await res.json();
             if (db_id) {
@@ -571,11 +597,11 @@ export function clearHistory() {
 
 /**
  * Checks URL for BiomPIN parameter and auto-loads if present
- * Supports URL format: ?pin=word-word-123456
+ * Supports URL format: ?biompin=word-word-123456
  */
 export function checkUrlForBiomPin() {
     const urlParams = new URLSearchParams(window.location.search);
-    const pin = urlParams.get('pin');
+    const pin = urlParams.get('biompin');
 
     if (pin) {
         // Switch to BiomPIN tab since it's no longer the default

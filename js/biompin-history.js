@@ -150,6 +150,112 @@
             return [];
         }
 
+        function base64UrlEncode(value) {
+            const bytes = new TextEncoder().encode(value);
+            let binary = '';
+            bytes.forEach(byte => {
+                binary += String.fromCharCode(byte);
+            });
+            return btoa(binary)
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/g, '');
+        }
+
+        function base64UrlDecode(value) {
+            const padded = value.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(value.length / 4) * 4, '=');
+            const binary = atob(padded);
+            const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+            return new TextDecoder().decode(bytes);
+        }
+
+        function normalizeIdentityContext(identityContext) {
+            if (!identityContext) return null;
+            const patientName = identityContext.patientName || identityContext.patient_name || null;
+            const patientId = identityContext.patientId || identityContext.patient_id || null;
+
+            if (!patientName && !patientId) return null;
+
+            return {
+                v: 1,
+                patient_name: patientName || null,
+                patient_id: patientId || null
+            };
+        }
+
+        function encodeIdentityContext({ patientName, patientId } = {}) {
+            const context = normalizeIdentityContext({ patientName, patientId });
+            if (!context) return null;
+            return base64UrlEncode(JSON.stringify(context));
+        }
+
+        function decodeIdentityContextFromLocation(location = window.location) {
+            const hash = location?.hash || '';
+            if (!hash) return null;
+
+            const params = new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : hash);
+            const encoded = params.get('biomctx');
+            if (!encoded) return null;
+
+            try {
+                const parsed = JSON.parse(base64UrlDecode(encoded));
+                if (parsed.v !== undefined && parsed.v !== 1) return null;
+                const patientName = parsed.patient_name || null;
+                const patientId = parsed.patient_id || null;
+                return patientName || patientId ? { patientName, patientId } : null;
+            } catch {
+                return null;
+            }
+        }
+
+        function appendIdentityFragment(url, identityContext) {
+            const context = normalizeIdentityContext(identityContext);
+            if (!context) return url;
+
+            const encoded = encodeIdentityContext({
+                patientName: context.patient_name,
+                patientId: context.patient_id
+            });
+            if (!encoded) return url;
+
+            return `${url}#biomctx=${encoded}`;
+        }
+
+        function buildBiomPINUrl(pin, identityContext = null) {
+            if (!pin) return '';
+            return appendIdentityFragment(`/pin/${encodeURIComponent(pin)}`, identityContext);
+        }
+
+        function buildCalculatorUrl(baseUrl, pin, identityContext = null) {
+            if (!baseUrl || !pin) return '';
+
+            const url = new URL(baseUrl, window.location.origin);
+            url.searchParams.set('biompin', pin);
+            return appendIdentityFragment(url.toString(), identityContext);
+        }
+
+        function mergeLocalIdentifiers(pin, response, identityContext = null) {
+            if (!pin || !response?.data?.patient) return response;
+
+            const historyEntry = readEntries().find(item => item.biompin === pin);
+            const patientName = response.data.patient.name || identityContext?.patientName || identityContext?.patient_name || historyEntry?.patient_name || null;
+            const patientId = response.data.patient.id || identityContext?.patientId || identityContext?.patient_id || historyEntry?.patient_id || null;
+
+            response.data.patient.name = patientName;
+            response.data.patient.id = patientId;
+
+            return response;
+        }
+
+        function identityContextFromResponse(response) {
+            const patient = response?.data?.patient;
+            if (!patient) return null;
+            return normalizeIdentityContext({
+                patientName: patient.name,
+                patientId: patient.id
+            });
+        }
+
         return {
             add,
             list,
@@ -160,6 +266,15 @@
             pruneDbIdMismatch,
             clearOne,
             clearAll,
+            base64UrlEncode,
+            base64UrlDecode,
+            normalizeIdentityContext,
+            encodeIdentityContext,
+            decodeIdentityContextFromLocation,
+            buildBiomPINUrl,
+            buildCalculatorUrl,
+            mergeLocalIdentifiers,
+            identityContextFromResponse
         };
     }
 

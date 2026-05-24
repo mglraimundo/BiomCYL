@@ -126,6 +126,52 @@ Removes every stored entry and returns an empty array.
 history.clearAll();
 ```
 
+### Identity Context and Recovery Methods
+
+To support private data handling (where patient names and IDs are redacted from BiomPIN payloads stored on servers), the SDK provides helper methods to pass and reconstruct this private context in the browser using URL hash fragments.
+
+#### `decodeIdentityContextFromLocation(location)`
+Extracts, decodes, and parses a `#biomctx=...` hash fragment from a browser `Location` or standard `URL` object. Returns `{ patientName, patientId }` or `null`.
+
+```js
+const context = history.decodeIdentityContextFromLocation(window.location);
+```
+
+#### `mergeLocalIdentifiers(biomPin, apiResponse, identityContext)`
+Reconstructs the patient's redacted `name` and `id` in the API response object. It looks for these values in the provided `identityContext` first, falling back to any matching PIN entry in the local history.
+
+```js
+const mergedResponse = history.mergeLocalIdentifiers(pin, response, context);
+```
+
+#### `encodeIdentityContext({ patientName, patientId })`
+Encodes patient name and ID into a standard, URL-safe base64url string.
+
+```js
+const encoded = history.encodeIdentityContext({ patientName: "Jane Doe", patientId: "123" });
+```
+
+#### `identityContextFromResponse(response)`
+Extracts the identity context from a standard API response.
+
+```js
+const context = history.identityContextFromResponse(response);
+```
+
+#### `buildBiomPINUrl(pin, identityContext)`
+Builds a relative `/pin/${pin}` path containing the optional `#biomctx=...` fragment.
+
+```js
+const url = history.buildBiomPINUrl(pin, context);
+```
+
+#### `buildCalculatorUrl(baseUrl, pin, identityContext)`
+Builds an absolute URL targeting a calculator at `baseUrl` with the `biompin` query param and the optional `#biomctx=...` fragment.
+
+```js
+const url = history.buildCalculatorUrl("https://calculator.com", pin, context);
+```
+
 ## Minimal Example
 
 ```html
