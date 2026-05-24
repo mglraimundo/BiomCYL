@@ -9,6 +9,8 @@ import { calculate, clearResults, updateBadge, IDX_SIMK } from './calculations.j
 // Central BiomAPI server base URL config
 const BIOMAPI_BASE_URL = window.CYL_CONFIG?.biomApiBaseUrl || 'https://biomapi-next.onrender.com';
 
+let pendingBiompinIdentityContext = null;
+
 // ==========================================
 // BIOMPIN FUNCTIONS
 // ==========================================
@@ -216,8 +218,9 @@ export async function loadBiomPIN(options = {}) {
             throw new Error('Invalid response structure from API');
         }
 
-        // Decode context from window.location
-        const identityContext = historyStore.decodeIdentityContextFromLocation(window.location);
+        // Decode context from pendingContext (if pasted) or window.location
+        const identityContext = pendingBiompinIdentityContext || historyStore.decodeIdentityContextFromLocation(window.location);
+        pendingBiompinIdentityContext = null;
 
         // Merge redacted patient identifiers
         data = historyStore.mergeLocalIdentifiers(pin, data, identityContext);
@@ -468,7 +471,17 @@ export function handleBiomPinPaste(e) {
 
     // Check if pasted text is a URL containing a BiomPIN
     const pin = extractBiomPIN(pastedText);
+    pendingBiompinIdentityContext = null;
+
     if (pin && pastedText !== pin) {
+        // Try to parse the URL and extract the biomctx fragment
+        try {
+            const parsedUrl = new URL(pastedText, window.location.origin);
+            pendingBiompinIdentityContext = historyStore.decodeIdentityContextFromLocation(parsedUrl);
+        } catch {
+            pendingBiompinIdentityContext = null;
+        }
+
         // It's a URL or different format, replace with just the PIN
         e.preventDefault();
         els.biomPinInput.value = pin;
