@@ -1,4 +1,4 @@
-const CACHE_VERSION = '1.6.1';
+const CACHE_VERSION = '1.6.2';
 const CACHE_NAME = `cyl-v${CACHE_VERSION}`;
 
 // Versioned assets (JS, CSS, manifest) are intentionally NOT precached: each release's new ?v= must miss cache and pull fresh from network.

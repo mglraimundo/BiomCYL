@@ -248,7 +248,7 @@ Storage, expiry, lazy db-id mismatch pruning, and clearing are handled by [`js/b
 
 CYL is a static client-side app. There is no backend, no analytics, no telemetry.
 
-- The **only** outbound network traffic is to `biomapi-next.onrender.com` (PIN retrieve, file upload, status) and `web3forms.com` (contact form).
+- The **only** outbound network traffic is to `biomapi.com` (PIN retrieve, file upload, status) and `web3forms.com` (contact form).
 - Patient data pasted into the calculator never leaves the browser unless the user explicitly uploads a file to BiomAPI.
 - Local history is stored in the browser's `localStorage` and is scoped to a single device / browser profile.
 - There are no cookies, no tracking pixels, no session tokens.

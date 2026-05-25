@@ -7,7 +7,7 @@ import { els, state, toggleMeasured, resetAndHidePK, selectEye, switchTab, setFi
 import { calculate, clearResults, updateBadge, IDX_SIMK } from './calculations.js';
 
 // Central BiomAPI server base URL config
-const BIOMAPI_BASE_URL = window.CYL_CONFIG?.biomApiBaseUrl || 'https://biomapi-next.onrender.com';
+const BIOMAPI_BASE_URL = window.CYL_CONFIG?.biomApiBaseUrl || 'https://biomapi.com';
 
 let pendingBiompinIdentityContext = null;
 
